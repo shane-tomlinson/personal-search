@@ -1,13 +1,15 @@
 
 
-if results.length
-  h2 Results for `#{search_text}`
-  ul#results
-    each result in results
-      if result.url && result.title
-        li
-          a(href="#{result.url}")= result.title
-          p #{result.summary.substr(0, 500)}
-else
-  p No results found for `#{search_text}`
+section#results
+  if results.length
+      h2 Results for `#{search_text}`
+      ol
+        each result in results
+          if result.url && result.title
+            li
+              h3
+                a(href="#{result.url}", target="_blank")= result.title
+              p #{result.summary.substr(0, 500)}
+  else
+    p No results found for `#{search_text}`
 

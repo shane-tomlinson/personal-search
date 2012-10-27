@@ -4,7 +4,7 @@ extends layout
 block content
   h1 Personal Search
 
-  ul
+  ul#main_form
     li
       form(method='post', action='/save', name='save')
         label(for='save') Save URL
@@ -20,9 +20,9 @@ block content
 
 
 
-    if search_text
-      include results
+  if search_text
+    include results
 
-    if url
-      include saving
+  if url
+    include saving
 

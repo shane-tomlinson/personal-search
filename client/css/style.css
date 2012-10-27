@@ -31,7 +31,7 @@ footer, header, hgroup, menu, nav, section {
 body {
 	line-height: 1;
 }
-ol, ul {
+ul {
 	list-style: none;
 }
 blockquote, q {
@@ -47,19 +47,44 @@ table {
 	border-spacing: 0;
 }
 
-li {
-  margin-bottom: 10px;
+
+/* On to our specific CSS */
+
+body {
+  padding: 20px 100px;
+  line-height: 1.15;
 }
 
-li label {
+#main_form {
+  margin-bottom: 1em;
+}
+
+#main_form li {
+  margin-bottom: .5em;
+}
+
+#main_form li label {
   display: inline-block;
   text-align: right;
   min-width: 5em;
 }
 
-li input[type=text] {
+#main_form li input[type=text] {
   display: inline-block;
   width: 75em;
   padding: .25em;
+}
+
+#results h2 {
+  margin-bottom: 1.5em;
+}
+
+#results li {
+  margin-bottom: 1.5em;
+  max-width: 80%;
+}
+
+#results h3 {
+  margin-bottom: .5em;
 }
 
