@@ -1,0 +1,13 @@
+
+
+if results.length
+  h2 Results for `#{search_text}`
+  ul#results
+    each result in results
+      if result.url && result.title
+        li
+          a(href="#{result.url}")= result.title
+          p #{result.summary.substr(0, 500)}
+else
+  p No results found for `#{search_text}`
+

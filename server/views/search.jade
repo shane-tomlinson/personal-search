@@ -1,0 +1,28 @@
+extends layout
+
+
+block content
+  h1 Personal Search
+
+  ul
+    li
+      form(method='post', action='/save', name='save')
+        label(for='save') Save URL
+        input(type='text', id='url', name='url', placeholder='http://yoururl.com')
+        input(type='submit', value='Save')
+        
+
+    li
+      form(method='post', action='/search', name='search')
+        label(for='search') Search
+        input(type='text', id='search_text', name='search_text', placeholder='Search')
+        input(type='submit', value='search')
+
+
+
+    if search_text
+      include results
+
+    if url
+      include saving
+
