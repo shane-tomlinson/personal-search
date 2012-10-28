@@ -3,12 +3,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const express    = require('express'),
-      path       = require('path'),
-      url        = require('url'),
-      get_page   = require('./lib/get-page'),
-      crawler    = require('./lib/crawler'),
-      pages      = require('./lib/pages');
+const express     = require('express'),
+      path        = require('path'),
+      url         = require('url'),
+      get_page    = require('./lib/get-page'),
+      web_crawler = require('./lib/crawlers/web-crawler.js'),
+      pages       = require('./lib/pages');
 
 function shouldIndex(parsedRoot, parsedLink) {
   try {
