@@ -4,9 +4,8 @@
 
 const jsdom      = require('jsdom');
 
-
 function removeElements(window, type) {
-  var els = window.document.getElementsByTagName(type);
+  var els = window.document.querySelectorAll(type);
   var count = els && els.length;
   for (var element, index=0; index < count; index++) {
     element = els[index];
@@ -38,45 +37,98 @@ function getWords(text) {
   return Object.keys(words);
 }
 
-exports.get = function(url, done) {
-  jsdom.env(url, [], function(err, window) {
-    if (err) {
-      done(err, null);
-      return;
+function getContentElement(window) {
+  var commonContentElements = [
+    "#main-content",
+    "#content-main",
+    "#api-content",
+    "#docs-content",
+    "#content",
+    "#contents",
+    "#main",
+    ".content",
+    ".contents",
+    ".main",
+    ".tab-content"
+  ];
+
+  for(var i = 0, elementToSearchFor; elementToSearchFor = commonContentElements[i]; ++i) {
+    var element = window.document.querySelector(elementToSearchFor);
+    if (element) {
+      return element;
     }
+  }
 
-    var start = new Date();
+  return window.document.body;
+}
 
-    // get rid of scripts, links and iframes
-    removeElements(window, "script");
-    removeElements(window, "link");
-    removeElements(window, "iframe");
+exports.get = function(url, done) {
+  console.log("getting", url);
+  jsdom.env({
+    html: url,
+    features: {
+      QuerySelector: true
+    },
+    done: function(err, window) {
+      if (err) {
+        done(err, null);
+        return;
+      }
 
-    // strip all tags, replace tags with a space.
-    // strip all multiple whitespace occurrances with a single space
-    var text = window.document.body.innerHTML.replace(/<(.*?)>/g, ' ')
-        // the next two are because after replacing tags with spaces, sometimes
-        // there are spaces and then punctuation marks
-        .replace(' .', '.')
-        .replace(' ,', ',')
-        .replace(/<!--[\s\S]*?-->/g, ' ')
-        .replace('&nbsp', ' ')
-        .replace(/\s+/g, ' ').trim();
+      var start = new Date();
 
-    console.log(text);
+      // get links before any elements are removed
+      var links = getAnchors(window);
 
-    var textWithoutPunctuation = text.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ');
-    var links = getAnchors(window);
-    var words = getWords(textWithoutPunctuation);
+      // get rid of scripts, links and iframes
+      var elementsToRemove = [
+        "script",
+        "link",
+        "iframe",
+        "nav",
+        "#nav",
+        ".nav",
+        "#navigation",
+        ".navigation",
+        "#breadcrumbs",
+        ".breadcrumbs",
+        "#jump-to",
+        ".jump-to",
+        "#jump-to-nav",
+        ".jump-to-nav"
+      ];
 
-    done(null, {
-      processing_time: new Date() - start,
-      words: words,
-      summary: text.substr(0, 1000),
-      title: window.document.title,
-      url: url,
-      links: links
-    });
+      elementsToRemove.forEach(function(element) {
+        removeElements(window, element);
+      });
+
+      var contentElement = getContentElement(window);
+
+      // strip all tags, replace tags with a space.
+      // strip all multiple whitespace occurrances with a single space
+      var text = contentElement.innerHTML.replace(/<(.*?)>/g, ' ')
+          // the next two are because after replacing tags with spaces, sometimes
+          // there are spaces and then punctuation marks
+          .replace(' .', '.')
+          .replace(' ,', ',')
+          .replace(/<!--[\s\S]*?-->/g, ' ')
+          .replace('&nbsp', ' ')
+          .replace(/\s+/g, ' ').trim();
+
+      console.log(text);
+
+      var textWithoutPunctuation = text.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ');
+      var words = getWords(textWithoutPunctuation);
+
+      done(null, {
+        processing_time: new Date() - start,
+        words: words,
+        summary: text.substr(0, 1000),
+        title: window.document.title,
+        url: url,
+        links: links
+      });
+    }
   });
 };
 

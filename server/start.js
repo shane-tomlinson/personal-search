@@ -90,7 +90,7 @@ pages.init(function(err) {
   function getPage(page_url, done) {
     if (visited[page_url]) {
       console.log('already visited:', page_url);
-      done(null, null);
+      done && done(null, null);
       return;
     }
 
