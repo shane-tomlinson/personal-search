@@ -157,7 +157,5 @@ pages.init(function(err) {
     getPage(page_url);
   });
 
-  app.listen(3000);
-
-
+  app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');
 });

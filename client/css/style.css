@@ -55,6 +55,11 @@ body {
   line-height: 1.15;
 }
 
+#content {
+  background-color: #f6f6ef;
+  padding: 2em 3em;
+}
+
 #main_form {
   margin-bottom: 1em;
 }
