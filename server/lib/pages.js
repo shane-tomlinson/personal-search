@@ -8,9 +8,7 @@ const path     = require('path'),
       var_path = require('./constants').var_path,
       db_path  = path.join(var_path, "pages.json");
 
-var pages;
-
-exports.init = function(done) {
+function getPages(done) {
   fs.exists(db_path, function(exists) {
     if (exists) {
       fs.readFile(db_path, function(err, data) {
@@ -20,8 +18,7 @@ exports.init = function(done) {
         }
 
         try {
-          pages = JSON.parse(data);
-          done(null, pages);
+          done(null, JSON.parse(data));
         }
         catch(e) {
           done(e, null);
@@ -29,10 +26,20 @@ exports.init = function(done) {
       });
     }
     else {
-      pages = {};
-      done(null, pages);
+      done(null, {});
     }
   });
+}
+
+function savePages(pages, done) {
+  fs.writeFile(db_path, JSON.stringify(pages), 'utf8', function(err) {
+    if (err) done(err, null);
+    else done(null, true);
+  });
+}
+
+exports.init = function(done) {
+  done();
 };
 
 function whitelistFilter(obj, itemsToAllow) {
@@ -42,13 +49,22 @@ function whitelistFilter(obj, itemsToAllow) {
   });
   return newObj;
 }
-exports.save = function(page, done) {
-  pages[page.url] = whitelistFilter(page, [
-    'words', 'summary', 'title', 'url'
-  ]);
 
-  fs.writeFile(db_path, JSON.stringify(pages), 'utf8', function(err) {
-    done(null, page);
+exports.save = function(page, done) {
+  getPages(function(err, pages) {
+    if (err) {
+      done(err, null);
+    }
+    else {
+      pages[page.url] = whitelistFilter(page, [
+        'words', 'summary', 'title', 'url'
+      ]);
+
+      savePages(pages, function(err, status) {
+        if (err) done(err, null);
+        else done(null, status === true ? page : status);
+      });
+    }
   });
 };
 
@@ -145,10 +161,17 @@ function sortPages(options, pages, done) {
 }
 
 exports.search = function(options, done) {
-  filterPages(pages, options.url, function(err, pagesToSearch) {
-    if(pagesToSearch) console.log('searching', Object.keys(pagesToSearch).length, 'pages');
-    matchStringInPages(pagesToSearch, options.terms, function(err, pages) {
-      sortPages(options, pages, done);
+  getPages(function(err, pages) {
+    if(err) {
+      done(err, null);
+      return;
+    }
+
+    filterPages(pages, options.url, function(err, pagesToSearch) {
+      if(pagesToSearch) console.log('searching', Object.keys(pagesToSearch).length, 'pages');
+      matchStringInPages(pagesToSearch, options.terms, function(err, pages) {
+        sortPages(options, pages, done);
+      });
     });
   });
 };
