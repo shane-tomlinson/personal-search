@@ -5,32 +5,9 @@
 
 const express     = require('express'),
       path        = require('path'),
-      url         = require('url'),
-      get_page    = require('./lib/get-page'),
-      web_crawler = require('./lib/crawlers/web-crawler.js'),
-      pages       = require('./lib/pages');
+      pages       = require('./lib/pages'),
+      indexer     = require('./lib/indexer');
 
-function shouldIndex(parsedRoot, parsedLink) {
-  try {
-    var rootHostname = parsedRoot.hostname.replace(/^www\./, '');
-    var linkHostname = parsedLink.hostname.replace(/^www\./, '');
-
-    // link MUST be on the same host and a sub-path of the current path
-    if (linkHostname === rootHostname) {
-      // If the rootPath is index.html(or .htm), then it *is* the root document
-      // for the directory. Get rid of the index.html so we know whether to
-      // look at the new document or not.
-      var rootPath = parsedRoot.pathname.replace(/index\.htm[l]?/, '')
-        .replace(/^\//, '')
-        .replace(/\/$/, '') + "/";
-      var linkPath = "/" + parsedLink.pathname.replace(/^\//, '').replace(/\/$/, '');
-
-      return linkPath !== rootPath && linkPath.indexOf(rootPath) === 0;
-    }
-  } catch(e) {}
-
-  return false;
-}
 
 pages.init(function(err) {
   if (err) throw err;
@@ -44,7 +21,7 @@ pages.init(function(err) {
   app.use(express.static(path.join(__dirname, "..", "client")));
 
   app.get('/', function(req, res, next) {
-    res.render('search', {
+    res.render('index', {
       search_text: null,
       url: null
     });
@@ -56,7 +33,7 @@ pages.init(function(err) {
       terms: search_text
     }, function(err, results) {
 
-      res.render('search', {
+      res.render('index', {
         search_text: search_text,
         url: null,
         results: results
@@ -65,76 +42,16 @@ pages.init(function(err) {
     });
   });
 
-  var visited = {};
-
-  function getPage(page_url, done) {
-    if (visited[page_url]) {
-      console.log('already visited:', page_url);
-      done && done(null, null);
-      return;
-    }
-
-    web_crawler.get(page_url, function(err, page) {
-      visited[page_url] = true;
-
-      if (err) {
-        done && done(err, null);
-        return;
-      }
-
-      pages.save(page, function(err, page) {
-        if (err) {
-          done && done(err, null);
-          return;
-        }
-
-        var parsedRoot = url.parse(page_url);
-        /*.hostname.replace(/^www\./, '');*/
-        var links = [].concat(page.links);
-
-        function getNextLink() {
-          var link = links.shift();
-
-          if (link) {
-
-            if (shouldIndex(parsedRoot, url.parse(link))) {
-              // follow internal links if they are not already in the database.
-              pages.search({ url: link }, function(err, pages) {
-                if (!(pages && pages[link])) {
-                  /*console.log('following link: ' + link);*/
-                  getPage(link, getNextLink);
-                }
-                else {
-                  /*console.log('page already indexed: ' + link);*/
-                  getNextLink();
-                }
-              });
-            }
-            else {
-              /*console.log("should not index: " + link);*/
-              getNextLink();
-            }
-          }
-          else {
-            done && done(null, true);
-          }
-        }
-
-        getNextLink();
-      });
-    });
-  }
-
   app.post('/save', function(req, res, next) {
     var page_url = req.body.url;
 
-    res.render('search', {
+    res.render('index', {
       search_text: null,
       url: page_url
     });
 
     // let this go out of band
-    getPage(page_url);
+    indexer.index(page_url);
   });
 
   app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');
