@@ -22,30 +22,10 @@ function shouldIndex(parsedRoot, parsedLink) {
       // look at the new document or not.
       var rootPath = parsedRoot.pathname.replace(/index\.htm[l]?/, '')
         .replace(/^\//, '')
-        .replace(/\/$/, '')
-        .split('/');
-      var linkPath = parsedLink.pathname.replace(/^\//, '').replace(/\/$/, '').split('/');
+        .replace(/\/$/, '') + "/";
+      var linkPath = "/" + parsedLink.pathname.replace(/^\//, '').replace(/\/$/, '');
 
-      if (rootPath.length === 1 && rootPath[0] === "") rootPath.shift();
-      if (linkPath.length === 1 && linkPath[0] === "") linkPath.shift();
-
-      console.log(rootPath, linkPath);
-      if (linkPath.length > rootPath.length) {
-        var subpath = true;
-
-        rootPath.forEach(function(segment, index) {
-          if (linkPath[index] !== segment) subpath = false
-        });
-
-        // if the paths are the same length, make sure the query string is
-        // different
-        /*
-        if (linkPath.length === rootPath.length) {
-          subpath = parsedLink.search !== linkPath.search;
-        }*/
-
-        return subpath;
-      }
+      return linkPath !== rootPath && linkPath.indexOf(rootPath) === 0;
     }
   } catch(e) {}
 
@@ -94,7 +74,7 @@ pages.init(function(err) {
       return;
     }
 
-    crawler.get(page_url, function(err, page) {
+    web_crawler.get(page_url, function(err, page) {
       visited[page_url] = true;
 
       if (err) {
@@ -121,17 +101,17 @@ pages.init(function(err) {
               // follow internal links if they are not already in the database.
               pages.search({ url: link }, function(err, pages) {
                 if (!(pages && pages[link])) {
-                  console.log('following link: ' + link);
+                  /*console.log('following link: ' + link);*/
                   getPage(link, getNextLink);
                 }
                 else {
-                  console.log('page already indexed: ' + link);
+                  /*console.log('page already indexed: ' + link);*/
                   getNextLink();
                 }
               });
             }
             else {
-              console.log("should not index: " + link);
+              /*console.log("should not index: " + link);*/
               getNextLink();
             }
           }

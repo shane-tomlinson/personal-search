@@ -8,20 +8,28 @@
 
 const request = require('request');
 
-exports.get = function(url_to_fetch, done) {
-  console.log("getting: " + url_to_fetch);
-  request({ uri: url_to_fetch }, function(err, res, body) {
+exports.get = function(resource_url, etag, done) {
+  var request_options = {
+    uri: resource_url,
+    followRedirect: true
+  };
+
+  if (etag) {
+    request_options.headers = {
+      "If-None-Match": etag
+    };
+  }
+
+  request(request_options, function(err, res, body) {
     if (err) {
       done(err, null);
     }
-    else if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 303) {
-      // redirect! go to the new URL
-      exports.get(res.headers.location, done);
-    }
     else {
-      console.log(body);
-      console.log("gotten", body);
-      done(null, body);
+      done(null, {
+        statusCode: res.statusCode,
+        body: body,
+        ETag: res.headers.etag
+      });
     }
   });
 };
