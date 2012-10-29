@@ -54,5 +54,20 @@ pages.init(function(err) {
     indexer.index(page_url);
   });
 
+  app.get('/group', function(req, res, next) {
+    res.render('group', {
+      group_name: null,
+      groups: []
+    });
+  });
+
+  app.post('/group', function(req, res, next) {
+    var group_name = req.body.group;
+    res.render('group', {
+      group_name: group_name,
+      groups: []
+    });
+  });
+
   app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');
 });
