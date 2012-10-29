@@ -57,7 +57,7 @@ exports.save = function(page, done) {
     }
     else {
       pages[page.url] = whitelistFilter(page, [
-        'words', 'summary', 'title', 'url'
+        'words', 'summary', 'title', 'url', 'users'
       ]);
 
       savePages(pages, function(err, status) {
@@ -68,14 +68,14 @@ exports.save = function(page, done) {
   });
 };
 
-function matchStringInPages(pages, search_string, done) {
+function filterPagesForString(pages, search_string, done) {
   if (!search_string) {
     done(null, pages);
     return;
   }
 
   var terms = toSearchTerms(search_string);
-  var matches = [];
+  var matches = {};
 
   for(var url in pages) {
     var page = pages[url];
@@ -87,13 +87,13 @@ function matchStringInPages(pages, search_string, done) {
       if (page.words.indexOf(term) === -1 && page.url.indexOf(term) === -1) match = false;
     });
 
-    if (match) matches.push(page);
+    if (match) matches[url] = page;
   }
 
   done(null, matches);
 }
 
-function filterPages(pages, url, done) {
+function filterPagesForURL(pages, url, done) {
   if (!url) {
     done(null, pages);
     return;
@@ -103,7 +103,27 @@ function filterPages(pages, url, done) {
 
   if (pages[url]) {
     matches = {};
+    console.log("match", url);
     matches[url] = pages[url];
+  }
+
+  done(null, matches);
+}
+
+function filterPagesForUser(pages, user, done) {
+  if (!user) {
+    done(null, pages);
+    return;
+  }
+
+  var matches = {};
+
+  for (var url in pages) {
+    var page = pages[url];
+
+    if(page.users && page.users.indexOf(user) > -1) {
+      matches[url] = page;
+    }
   }
 
   done(null, matches);
@@ -156,7 +176,7 @@ function sortPages(options, pages, done) {
 
   }
   else {
-    done(pages);
+    done(null, pages);
   }
 }
 
@@ -167,10 +187,16 @@ exports.search = function(options, done) {
       return;
     }
 
-    filterPages(pages, options.url, function(err, pagesToSearch) {
-      if(pagesToSearch) console.log('searching', Object.keys(pagesToSearch).length, 'pages');
-      matchStringInPages(pagesToSearch, options.terms, function(err, pages) {
-        sortPages(options, pages, done);
+    filterPagesForURL(pages, options.url, function(err, pages) {
+      filterPagesForUser(pages, options.user, function(err, pages) {
+        filterPagesForString(pages, options.terms, function(err, pages) {
+          var pagesArray = [];
+          for(var key in pages) {
+            pagesArray.push(pages[key]);
+          }
+
+          sortPages(options, pagesArray, done);
+        });
       });
     });
   });

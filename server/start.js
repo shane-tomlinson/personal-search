@@ -3,11 +3,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const express     = require('express'),
-      path        = require('path'),
-      pages       = require('./lib/pages'),
-      indexer     = require('./lib/indexer');
+const express         = require('express'),
+      path            = require('path'),
+      persona         = require('express-persona');
+      pages           = require('./lib/pages'),
+      indexer         = require('./lib/indexer');
 
+
+function renderPage(req, res, page, options, statusCode) {
+  options.email = req.session.email;
+  console.log(options.email);
+  res.render(page, options);
+}
 
 pages.init(function(err) {
   if (err) throw err;
@@ -17,11 +24,19 @@ pages.init(function(err) {
   app.set('view engine', 'jade');
   app.set('views', path.join(__dirname, "views"));
 
-  app.use(express.bodyParser());
-  app.use(express.static(path.join(__dirname, "..", "client")));
+  app.use(express.bodyParser())
+     .use(express.cookieParser())
+     .use(express.session({
+       secret: 'mysecret'
+     }))
+     .use(express.static(path.join(__dirname, "..", "client")));
+
+  persona(app, {
+    audience: 'http://localhost:3000'
+  });
 
   app.get('/', function(req, res, next) {
-    res.render('index', {
+    renderPage(req, res, 'index', {
       search_text: null,
       url: null
     });
@@ -30,10 +45,11 @@ pages.init(function(err) {
   app.get('/search', function(req, res, next) {
     var search_text = req.query.search_text;
     pages.search({
+      user: req.session.email,
       terms: search_text
     }, function(err, results) {
 
-      res.render('index', {
+      renderPage(req, res, 'index', {
         search_text: search_text,
         url: null,
         results: results
@@ -43,30 +59,40 @@ pages.init(function(err) {
   });
 
   app.post('/save', function(req, res, next) {
-    var page_url = req.body.url;
+    if (req.session.email) {
+      var page_url = req.body.url.replace(/"#.*$/, '');
 
-    res.render('index', {
-      search_text: null,
-      url: page_url
-    });
+      renderPage(req, res, 'index', {
+        search_text: null,
+        url: page_url
+      });
 
-    // let this go out of band
-    indexer.index(page_url);
+      // let this go out of band
+      indexer.index(page_url, req.session.email, false);
+    }
+    else {
+      res.send(401);
+    }
   });
 
   app.get('/group', function(req, res, next) {
-    res.render('group', {
+    renderPage(req, res, 'group', {
       group_name: null,
       groups: []
     });
   });
 
   app.post('/group', function(req, res, next) {
-    var group_name = req.body.group;
-    res.render('group', {
-      group_name: group_name,
-      groups: []
-    });
+    if (req.session.email) {
+      var group_name = req.body.group;
+      renderPage(req, res, 'group', {
+        group_name: group_name,
+        groups: []
+      });
+    }
+    else {
+      res.send(401);
+    }
   });
 
   app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');

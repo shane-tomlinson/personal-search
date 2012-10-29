@@ -6,11 +6,12 @@ const web_crawler = require('./crawlers/web-crawler.js'),
       pages       = require('./pages'),
       url         = require('url');
 
-var visited = {};
 function shouldIndex(parsedRoot, parsedLink) {
   try {
     var rootHostname = parsedRoot.hostname.replace(/^www\./, '');
     var linkHostname = parsedLink.hostname.replace(/^www\./, '');
+
+    /*console.log(rootHostname, linkHostname);*/
 
     // link MUST be on the same host and a sub-path of the current path
     if (linkHostname === rootHostname) {
@@ -20,7 +21,7 @@ function shouldIndex(parsedRoot, parsedLink) {
       var rootPath = parsedRoot.pathname.replace(/index\.htm[l]?/, '')
         .replace(/^\//, '')
         .replace(/\/$/, '') + "/";
-      var linkPath = "/" + parsedLink.pathname.replace(/^\//, '').replace(/\/$/, '');
+      var linkPath = parsedLink.pathname.replace(/^\//, '').replace(/\/$/, '');
 
       return linkPath !== rootPath && linkPath.indexOf(rootPath) === 0;
     }
@@ -30,60 +31,75 @@ function shouldIndex(parsedRoot, parsedLink) {
 }
 
 
-exports.index = function(page_url, done) {
-  if (visited[page_url]) {
-    console.log('already visited:', page_url);
-    done && done(null, null);
-    return;
-  }
+exports.index = function(page_url, user, force, done) {
+  pages.search({ url: page_url }, function(err, saved_pages) {
+    if (saved_pages && !force) {
+      var page = saved_pages[0];
+      // see if this user is part of the page's user list. If not, add them to
+      // the list.
+      if (page.users.indexOf(user) === -1) {
+        page.users.unshift(user);
+        pages.save(page, function(err, page) {
+          console.log('already visited, but updated user:', page_url);
+          done && done(err, null);
+        });
+      }
+      else {
+        console.log('already visited, user already added:', page_url);
+        done && done(null, null);
+      }
 
-  web_crawler.get(page_url, function(err, page) {
-    visited[page_url] = true;
-
-    if (err) {
-      done && done(err, null);
       return;
     }
 
-    pages.save(page, function(err, page) {
+    web_crawler.get(page_url, function(err, page) {
       if (err) {
         done && done(err, null);
         return;
       }
 
-      var parsedRoot = url.parse(page_url);
-      /*.hostname.replace(/^www\./, '');*/
-      var links = [].concat(page.links);
-
-      function getNextLink() {
-        var link = links.shift();
-
-        if (link) {
-
-          if (shouldIndex(parsedRoot, url.parse(link))) {
-            // follow internal links if they are not already in the database.
-            pages.search({ url: link }, function(err, pages) {
-              if (!(pages && pages[link])) {
-                /*console.log('following link: ' + link);*/
-                exports.index(link, getNextLink);
-              }
-              else {
-                /*console.log('page already indexed: ' + link);*/
-                getNextLink();
-              }
-            });
-          }
-          else {
-            /*console.log("should not index: " + link);*/
-            getNextLink();
-          }
-        }
-        else {
-          done && done(null, true);
-        }
+      // make sure to keep original users as well.
+      page.users = [ user ];
+      if (saved_pages) {
+        page.users.concat(saved_pages[0].users);
       }
 
-      getNextLink();
+      console.log("saving page", page_url);
+      pages.save(page, function(err, page) {
+        if (err) {
+          console.log("error", err);
+          done && done(err, null);
+          return;
+        }
+
+        var parsedRoot = url.parse(page_url);
+        /*.hostname.replace(/^www\./, '');*/
+        var links = [].concat(page.links);
+        getNextLink();
+
+        function getNextLink() {
+          var link = links.shift();
+
+          if (link) {
+
+            /*console.log('getting next link', link);*/
+
+
+            if (shouldIndex(parsedRoot, url.parse(link))) {
+              /*console.log('following link: ' + link);*/
+              exports.index(link, user, force, getNextLink);
+            }
+            else {
+              /*console.log("should not index: " + link);*/
+              getNextLink();
+            }
+          }
+          else {
+            done && done(null, true);
+          }
+        }
+
+      });
     });
   });
 };

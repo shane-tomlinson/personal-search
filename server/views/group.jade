@@ -1,21 +1,21 @@
 extends layout
 
 block content
-  #content
-    section#my_groups
-      h1 My Groups
+  section#my_groups
+    h1 My Groups
 
-      if groups.length
-        ul
-          each group in groups
-            li
-              label(for='#{group}') #{group}
-                input(type='checkbox', for='#{group}', value='#{group}')
-        
-      else
-        p You are not a member of any groups!
+    if groups.length
+      ul
+        each group in groups
+          li
+            label(for='#{group}') #{group}
+              input(type='checkbox', for='#{group}', value='#{group}')
+      
+    else
+      p You are not a member of any groups!
 
 
+  if email
     section#new_group
       h2 Create a New Group
       ul#main_form

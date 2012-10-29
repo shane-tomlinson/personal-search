@@ -47,6 +47,24 @@ table {
 	border-spacing: 0;
 }
 
+/* for floats */
+.cf:after {
+  content: ".";
+  display: block;
+  clear: both;
+  visibility: hidden;
+  line-height: 0;
+  height: 0;
+}
+
+html[xmlns] .cf {
+  display: block;
+}
+
+* html .cf {
+  height: 1%;
+}
+
 
 /* On to our specific CSS */
 
@@ -55,10 +73,20 @@ body {
   line-height: 1.15;
 }
 
+
+header {
+  margin-bottom: 1em;
+}
+
+.right {
+  float: right;
+}
+
 #content {
   background-color: #f6f6ef;
   padding: 2em 3em;
 }
+
 
 #main_form {
   margin-bottom: 1em;
