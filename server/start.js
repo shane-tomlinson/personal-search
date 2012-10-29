@@ -50,8 +50,8 @@ pages.init(function(err) {
     });
   });
 
-  app.post('/search', function(req, res, next) {
-    var search_text = req.body.search_text;
+  app.get('/search', function(req, res, next) {
+    var search_text = req.query.search_text;
     pages.search({
       terms: search_text
     }, function(err, results) {
