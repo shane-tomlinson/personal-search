@@ -11,17 +11,18 @@ function shouldIndex(parsedRoot, parsedLink) {
     var rootHostname = parsedRoot.hostname.replace(/^www\./, '');
     var linkHostname = parsedLink.hostname.replace(/^www\./, '');
 
-    /*console.log(rootHostname, linkHostname);*/
+    console.log(rootHostname, linkHostname);
 
     // link MUST be on the same host and a sub-path of the current path
     if (linkHostname === rootHostname) {
       // If the rootPath is index.html(or .htm), then it *is* the root document
       // for the directory. Get rid of the index.html so we know whether to
       // look at the new document or not.
-      var rootPath = parsedRoot.pathname.replace(/index\.htm[l]?/, '')
-        .replace(/^\//, '')
-        .replace(/\/$/, '') + "/";
-      var linkPath = parsedLink.pathname.replace(/^\//, '').replace(/\/$/, '');
+      console.log("before", parsedRoot.pathname, parsedLink.pathname);
+      var rootPath = parsedRoot.pathname.replace(/index\.htm[l]?/, '');
+      var linkPath = parsedLink.pathname;
+
+      console.log("after", rootPath, linkPath);
 
       return linkPath !== rootPath && linkPath.indexOf(rootPath) === 0;
     }
