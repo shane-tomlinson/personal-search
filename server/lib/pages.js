@@ -4,42 +4,22 @@
 
 const path     = require('path'),
       fs       = require('fs'),
-      url      = require('url'),
-      db_path  = require('../etc/config').json_db_path;
+      url      = require('url');
+
+var db;
+
+exports.init = function(config, done) {
+  db = config.db;
+  done && done();
+};
 
 function getPages(done) {
-  fs.exists(db_path, function(exists) {
-    if (exists) {
-      fs.readFile(db_path, function(err, data) {
-        if (err) {
-          done(err, null);
-          return;
-        }
-
-        try {
-          done(null, JSON.parse(data));
-        }
-        catch(e) {
-          done(e, null);
-        }
-      });
-    }
-    else {
-      done(null, {});
-    }
-  });
+  db.get({ key: 'pages' }, done);
 }
 
 function savePages(pages, done) {
-  fs.writeFile(db_path, JSON.stringify(pages), 'utf8', function(err) {
-    if (err) done(err, null);
-    else done(null, true);
-  });
+  db.save({ key: 'pages', data: pages }, done);
 }
-
-exports.init = function(done) {
-  done();
-};
 
 function whitelistFilter(obj, itemsToAllow) {
   var newObj = {};

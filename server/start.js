@@ -7,6 +7,7 @@ const express         = require('express'),
       path            = require('path'),
       persona         = require('express-persona');
       config          = require('./etc/config'),
+      json_db         = require('./lib/db/json'),
       pages           = require('./lib/pages'),
       indexer         = require('./lib/indexer');
 
@@ -17,7 +18,9 @@ function renderPage(req, res, page, options, statusCode) {
   res.render(page, options);
 }
 
-pages.init(function(err) {
+pages.init({
+  db: json_db
+}, function(err) {
   if (err) throw err;
 
   var app = express();

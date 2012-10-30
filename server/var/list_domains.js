@@ -9,7 +9,7 @@ const fs = require('fs'),
 
 var domains = {};
 
-var pages = JSON.parse(fs.readFileSync('pages.json', 'utf8'));
+var pages = JSON.parse(fs.readFileSync('pages.json', 'utf8')).pages;
 
 console.log("There are", Object.keys(pages).length, "pages");
 for(var savedURL in pages) {
