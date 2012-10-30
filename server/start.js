@@ -6,6 +6,7 @@
 const express         = require('express'),
       path            = require('path'),
       persona         = require('express-persona');
+      config          = require('./etc/config'),
       pages           = require('./lib/pages'),
       indexer         = require('./lib/indexer');
 
@@ -32,7 +33,7 @@ pages.init(function(err) {
      .use(express.static(path.join(__dirname, "..", "client")));
 
   persona(app, {
-    audience: 'http://localhost:3000'
+    audience: config.public_url
   });
 
   app.get('/', function(req, res, next) {

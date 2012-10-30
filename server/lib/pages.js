@@ -5,8 +5,7 @@
 const path     = require('path'),
       fs       = require('fs'),
       url      = require('url'),
-      var_path = require('./constants').var_path,
-      db_path  = path.join(var_path, "pages.json");
+      db_path  = require('../etc/config').json_db_path;
 
 function getPages(done) {
   fs.exists(db_path, function(exists) {
