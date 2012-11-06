@@ -5,19 +5,10 @@
 const url           = require('url');
 
 
-exports.sortByRank = function(pages, terms, done) {
+exports.sortByRank = function(pages, options, done) {
+  var terms = options.terms;
+
   if (terms) {
-    // only one of the following can count
-    // 10 for url hostname match
-    // 9 for url hostname match without www if url has a www.
-    // 7 for url path match
-    // 5 for each word in partial hostname match
-
-    // any of these can count at any time
-    // 4 for each work in title
-    // 3 for each word match in text
-
-    console.log("pages before", pages);
     // first rank the pages
     pages.forEach(function(page, index) {
       page.ranking = rank(page, terms);
@@ -29,9 +20,7 @@ exports.sortByRank = function(pages, terms, done) {
       return b.ranking - a.ranking;
     });
 
-    console.log(pages);
     done(null, pages);
-
   }
   else {
     done(pages);
