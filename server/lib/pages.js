@@ -82,7 +82,6 @@ function filterPagesForURL(pages, url, done) {
 
   if (pages[url]) {
     matches = {};
-    console.log("match", url);
     matches[url] = pages[url];
   }
 
@@ -114,7 +113,6 @@ function toSearchTerms(search_string) {
 
 function sortPages(options, pages, done) {
   var terms = toSearchTerms(options.terms);
-  console.log("terms", terms);
   page_rank.sortByRank(pages, terms, done);
 }
 
@@ -133,7 +131,6 @@ exports.search = function(options, done) {
             pagesArray.push(pages[key]);
           }
 
-          console.log("sorting pages");
           sortPages(options, pagesArray, done);
         });
       });
