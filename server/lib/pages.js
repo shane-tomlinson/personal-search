@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const path     = require('path'),
-      fs       = require('fs'),
-      url      = require('url');
+const path          = require('path'),
+      fs            = require('fs'),
+      page_rank     = require('./page-rank');
 
 var db;
 
@@ -109,54 +109,13 @@ function filterPagesForUser(pages, user, done) {
 }
 
 function toSearchTerms(search_string) {
-  return search_string.trim().replace(/\s+/, ' ').toLowerCase().split(' ');
+  return search_string && search_string.trim().replace(/\s+/, ' ').toLowerCase().split(' ');
 }
 
 function sortPages(options, pages, done) {
-  if (options.terms) {
-    var terms = toSearchTerms(options.terms);
-    // only one of the following can count
-    // 10 for url hostname match
-    // 9 for url hostname match without www if url has a www.
-    // 7 for url path match
-    // 5 for each word in partial hostname match
-
-    // any of these can count at any time
-    // 4 for each work in title
-    // 3 for each word match in text
-
-    // first rank the pages
-    pages.forEach(function(page, index) {
-      var parsedURL = url.parse(page.url);
-      var parsedURLWithoutWWW = url.parse(page.url.replace(/^www\./, ''));
-      var hasWWW = parsedURL.hostname !== parsedURLWithoutWWW.hostname;
-
-      page.ranking = 0;
-
-      terms.forEach(function(term) {
-        if (term === parsedURL.hostname) page.ranking += 10;
-        else if (hasWWW && term === parsedURLWithoutWWW.hostname) page.ranking += 9;
-        else if (parsedURL.pathname && parsedURL.pathname.toLowerCase().indexOf(term) > -1) page.ranking += 7;
-        else if (parsedURL.hostname.indexOf(term) > -1) page.ranking += 5;
-
-        if (page.title.toLowerCase().indexOf(term) > -1) page.ranking += 4;
-
-        if (page.words.indexOf(term) > -1) page.ranking += 3;
-      });
-    });
-
-    // then sort the pages. BubbleSort, super slow. Yuck. Do a merge sort or
-    // something while creating the rankings.
-    pages.sort(function(a, b) {
-      return b.ranking - a.ranking;
-    });
-
-    done(null, pages);
-
-  }
-  else {
-    done(null, pages);
-  }
+  var terms = toSearchTerms(options.terms);
+  console.log("terms", terms);
+  page_rank.sortByRank(pages, terms, done);
 }
 
 exports.search = function(options, done) {
@@ -174,6 +133,7 @@ exports.search = function(options, done) {
             pagesArray.push(pages[key]);
           }
 
+          console.log("sorting pages");
           sortPages(options, pagesArray, done);
         });
       });

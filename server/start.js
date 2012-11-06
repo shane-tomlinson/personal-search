@@ -54,13 +54,11 @@ pages.init({ db: json_db }, function(err) {
         user: req.session.email,
         terms: search_text
       }, function(err, results) {
-
         renderPage(req, res, 'index', {
           search_text: search_text,
           url: null,
           results: results
         });
-
       });
     });
 
