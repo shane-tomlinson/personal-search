@@ -4,6 +4,7 @@
 
 const path          = require('path'),
       fs            = require('fs'),
+      _             = require('underscore'),
       page_rank     = require('./page-rank');
 
 var db;
@@ -22,11 +23,7 @@ function savePages(pages, done) {
 }
 
 function whitelistFilter(obj, itemsToAllow) {
-  var newObj = {};
-  itemsToAllow.forEach(function(item) {
-    if (item in obj) newObj[item] = obj[item];
-  });
-  return newObj;
+  return _.pick(obj, itemsToAllow);
 }
 
 exports.save = function(page, done) {
@@ -36,7 +33,7 @@ exports.save = function(page, done) {
     }
     else {
       pages[page.url] = whitelistFilter(page, [
-        'words', 'summary', 'title', 'url', 'users'
+        'words', 'summary', 'title', 'users', 'groups'
       ]);
 
       savePages(pages, function(err, status) {
@@ -99,8 +96,14 @@ function filterPagesForUser(pages, user, done) {
   for (var url in pages) {
     var page = pages[url];
 
-    if(page.users && page.users.indexOf(user) > -1) {
+    if(page.users && page.users.indexOf(user.email) > -1) {
       matches[url] = page;
+    }
+    else if(page.groups && user.groups) {
+      var matchingGroups = _.intersection(page.groups, page.groups);
+      if (matchingGroups && matchingGroups.length) {
+        matches[url] = page;
+      }
     }
   }
 
@@ -113,7 +116,7 @@ function toSearchTerms(search_string) {
 
 function sortPages(options, pages, done) {
   var terms = toSearchTerms(options.terms);
-  page_rank.sortByRank(pages, terms, done);
+  page_rank.sortByRank(pages, options, done);
 }
 
 exports.search = function(options, done) {
@@ -126,12 +129,7 @@ exports.search = function(options, done) {
     filterPagesForURL(pages, options.url, function(err, pages) {
       filterPagesForUser(pages, options.user, function(err, pages) {
         filterPagesForString(pages, options.terms, function(err, pages) {
-          var pagesArray = [];
-          for(var key in pages) {
-            pagesArray.push(pages[key]);
-          }
-
-          sortPages(options, pagesArray, done);
+          sortPages(options, _.values(pages), done);
         });
       });
     });

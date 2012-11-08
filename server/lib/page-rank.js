@@ -8,7 +8,7 @@ const url           = require('url');
 exports.sortByRank = function(pages, options, done) {
   var terms = options.terms;
 
-  if (terms) {
+  if (terms && pages.length > 1) {
     // first rank the pages
     pages.forEach(function(page, index) {
       page.ranking = rank(page, terms);
@@ -23,7 +23,7 @@ exports.sortByRank = function(pages, options, done) {
     done(null, pages);
   }
   else {
-    done(pages);
+    done(null, pages);
   }
 };
 

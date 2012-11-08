@@ -5,19 +5,8 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      groups          = require('../lib/groups');
-
-function DBMock() {
-  this.data = {};
-};
-DBMock.prototype.get = function(search_options, done) {
-  done && done(null, this.data[search_options.key]);
-};
-DBMock.prototype.save = function(config, done) {
-  this.data[config.key] = config.data;
-  done && done(null, true);
-};
-
+      groups          = require('../lib/groups'),
+      DBMock          = require('./mocks/json_db');
 
 var dbMock = new DBMock();
 groups.init({
