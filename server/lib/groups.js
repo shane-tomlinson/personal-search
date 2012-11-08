@@ -17,7 +17,7 @@ function saveGroups(groups, done) {
 exports.init = function(options, done) {
   db = options.db;
 
-  done(null);
+  done && done(null);
 };
 
 exports.search = function(config, done) {
@@ -42,6 +42,10 @@ exports.search = function(config, done) {
 };
 
 exports.save = function(group, done) {
+  if (!group.name) {
+    throw new Error("Group name must be defined");
+  }
+
   getGroups(function(err, groups) {
     if (err) {
       done && done(err);
