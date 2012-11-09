@@ -51,7 +51,9 @@ pages.init({ db: json_db }, function(err) {
     app.get('/search', function(req, res, next) {
       var search_text = req.query.search_text;
       pages.search({
-        user: req.session.email,
+        user: {
+          email: req.session.email
+        },
         terms: search_text
       }, function(err, results) {
         renderPage(req, res, 'index', {
@@ -80,18 +82,24 @@ pages.init({ db: json_db }, function(err) {
     });
 
     app.get('/group', function(req, res, next) {
-      renderPage(req, res, 'group', {
-        group_name: null,
-        groups: []
+      groups.search({}, function(err, groups) {
+        renderPage(req, res, 'group', {
+          group_name: null,
+          groups: groups
+        });
       });
     });
 
     app.post('/group', function(req, res, next) {
       if (req.session.email) {
         var group_name = req.body.group;
-        renderPage(req, res, 'group', {
-          group_name: group_name,
-          groups: []
+        groups.save({ name: group_name }, function(err, status) {
+          groups.search({}, function(err, groups) {
+            renderPage(req, res, 'group', {
+              group_name: group_name,
+              groups: groups
+            });
+          });
         });
       }
       else {
