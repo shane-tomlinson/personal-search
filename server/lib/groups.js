@@ -1,7 +1,8 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-const url      = require('url');
+const url           = require('url'),
+      _             = require('underscore');
 
 var db;
 
@@ -28,16 +29,20 @@ exports.search = function(config, done) {
     }
 
     var nameToFind = config.name;
-
-    for (var name in groups) {
-      var group = groups[name];
-      if(group.name === nameToFind) {
-        done && done(null, group);
-        return;
+    if (nameToFind) {
+      for (var name in groups) {
+        var group = groups[name];
+        if(group.name === nameToFind) {
+          done && done(null, [group]);
+          return;
+        }
       }
-    }
 
-    done && done(null, null);
+      done && done(null, []);
+    }
+    else {
+      done && done(null, _.values(groups));
+    }
   });
 };
 

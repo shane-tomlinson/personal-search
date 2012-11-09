@@ -100,7 +100,7 @@ function filterPagesForUser(pages, user, done) {
       matches[url] = page;
     }
     else if(page.groups && user.groups) {
-      var matchingGroups = _.intersection(page.groups, page.groups);
+      var matchingGroups = _.intersection(page.groups, user.groups);
       if (matchingGroups && matchingGroups.length) {
         matches[url] = page;
       }
@@ -115,7 +115,7 @@ function toSearchTerms(search_string) {
 }
 
 function sortPages(options, pages, done) {
-  var terms = toSearchTerms(options.terms);
+  options.terms = toSearchTerms(options.terms);
   page_rank.sortByRank(pages, options, done);
 }
 

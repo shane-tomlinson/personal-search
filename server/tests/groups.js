@@ -29,8 +29,8 @@ vows.describe("groups").addBatch({
       groups.search({ name: 'unknown' }, this.callback);
     },
 
-    'returns undefined': function(group) {
-      assert.equal(group, undefined);
+    'returns empty array': function(groups) {
+      assert.equal(groups.length, 0);
     }
   },
 
@@ -39,8 +39,8 @@ vows.describe("groups").addBatch({
       groups.search({ name: "group1" }, this.callback);
     },
 
-    'returns the group': function(group) {
-      assert.equal(group.name, 'group1');
+    'returns the group': function(groups) {
+      assert.equal(groups[0].name, 'group1');
     }
   },
 
@@ -56,10 +56,20 @@ vows.describe("groups").addBatch({
         groups.search({ name: 'group2' }, this.callback);
       },
 
-      'and found': function(group) {
-        assert.equal(group.name, 'group2');
-        assert.equal(group.members[0], 'user2@testuser.com');
+      'and found': function(groups) {
+        assert.equal(groups[0].name, 'group2');
+        assert.equal(groups[0].members[0], 'user2@testuser.com');
       }
+    }
+  },
+
+  'search without a group name': {
+    topic: function() {
+      groups.search({}, this.callback);
+    },
+
+    'returns all the groups': function(groups) {
+      assert.equal(groups.length, 2);
     }
   }
 }).export(module);
