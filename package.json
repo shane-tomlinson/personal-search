@@ -12,7 +12,8 @@
     "underscore": "1.4.2"
   },
   "devDependencies": {
-    "awsbox": "0.3.1"
+    "awsbox": "0.3.1",
+    "vows": "0.6.4"
   },
   "engines": {
     "node": ">= 0.8.11"
