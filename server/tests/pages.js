@@ -5,7 +5,7 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      pages           = require('../lib/pages'),
+      pages           = require('../lib/db/pages-json'),
       DBMock          = require('./mocks/json_db');
 
 

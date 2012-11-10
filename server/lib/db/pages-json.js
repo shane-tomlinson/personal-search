@@ -5,9 +5,9 @@
 const path          = require('path'),
       fs            = require('fs'),
       _             = require('underscore'),
-      page_rank     = require('./page-rank');
+      page_rank     = require('../page-rank');
 
-var db;
+var   db            = require('./json');
 
 exports.init = function(config, done) {
   db = config.db;

@@ -4,7 +4,7 @@
 const url           = require('url'),
       _             = require('underscore');
 
-var db;
+var   db            = require('./json');
 
 function getGroups(done) {
   db.get({ key: 'groups' }, done);

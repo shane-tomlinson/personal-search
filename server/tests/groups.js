@@ -5,7 +5,7 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      groups          = require('../lib/groups'),
+      groups          = require('../lib/db/groups-json'),
       DBMock          = require('./mocks/json_db');
 
 var dbMock = new DBMock();

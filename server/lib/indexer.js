@@ -3,8 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const web_crawler = require('./crawlers/web-crawler.js'),
-      pages       = require('./pages'),
       url         = require('url');
+
+var pages;
 
 function shouldIndex(parsedRoot, parsedLink) {
   try {
@@ -31,6 +32,12 @@ function shouldIndex(parsedRoot, parsedLink) {
   return false;
 }
 
+
+exports.init = function(config, done) {
+  pages = config.pages;
+
+  done && done(null);
+};
 
 exports.index = function(page_url, user, force, done) {
   pages.search({ url: page_url }, function(err, saved_pages) {

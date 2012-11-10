@@ -7,9 +7,8 @@ const express         = require('express'),
       path            = require('path'),
       persona         = require('express-persona');
       config          = require('./etc/config'),
-      json_db         = require('./lib/db/json'),
-      pages           = require('./lib/pages'),
-      groups          = require('./lib/groups'),
+      pages           = require('./lib/db/pages-json'),
+      groups          = require('./lib/db/groups-json'),
       indexer         = require('./lib/indexer');
 
 
@@ -19,11 +18,8 @@ function renderPage(req, res, page, options, statusCode) {
   res.render(page, options);
 }
 
-pages.init({ db: json_db }, function(err) {
+indexer.init({ pages: pages }, function(err) {
   if (err) throw err;
-
-  groups.init({ db: json_db }, function(err) {
-    if (err) throw err;
 
     var app = express();
 
@@ -108,5 +104,4 @@ pages.init({ db: json_db }, function(err) {
     });
 
     app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');
-  });
 });
