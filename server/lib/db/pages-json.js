@@ -5,6 +5,7 @@
 const path          = require('path'),
       fs            = require('fs'),
       _             = require('underscore'),
+      // XXX this should be at a different level.
       page_rank     = require('../page-rank');
 
 var   db            = require('./json');
