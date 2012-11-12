@@ -2,7 +2,7 @@ extends layout
 
 block content
   section#my_groups
-    h1 My Groups
+    h1 Groups
 
     if groups.length
       ul
@@ -12,7 +12,7 @@ block content
               input(type='checkbox', for='#{group}', value='#{group}')
       
     else
-      p You are not a member of any groups!
+      p There are no groups!
 
 
   if email
@@ -20,7 +20,7 @@ block content
       h2 Create a New Group
       ul#main_form
         li
-          form(method='post', action='/group', name='create_group')
+          form(method='post', action='/groups', name='create_group')
             label(for='group') Group Name
             input(type='text', id='group', name='group', placeholder='My New Group')
             input(type='submit', value='Create Group')

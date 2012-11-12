@@ -77,16 +77,21 @@ indexer.init({ pages: pages }, function(err) {
       }
     });
 
-    app.get('/group', function(req, res, next) {
+    app.get('/groups', function(req, res, next) {
       groups.search({}, function(err, groups) {
-        renderPage(req, res, 'group', {
-          group_name: null,
-          groups: groups
-        });
+        if (err) {
+          res.send(500, String(err));
+        }
+        else {
+          renderPage(req, res, 'group', {
+            group_name: null,
+            groups: groups
+          });
+        }
       });
     });
 
-    app.post('/group', function(req, res, next) {
+    app.post('/groups', function(req, res, next) {
       if (req.session.email) {
         var group_name = req.body.group;
         groups.save({ name: group_name }, function(err, status) {
@@ -102,6 +107,7 @@ indexer.init({ pages: pages }, function(err) {
         res.send(401);
       }
     });
+
 
     app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');
 });

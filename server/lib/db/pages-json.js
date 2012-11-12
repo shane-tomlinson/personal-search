@@ -27,6 +27,10 @@ function whitelistFilter(obj, itemsToAllow) {
   return _.pick(obj, itemsToAllow);
 }
 
+exports.clear = function(done) {
+  savePages({}, done);
+};
+
 exports.save = function(page, done) {
   getPages(function(err, pages) {
     if (err) {

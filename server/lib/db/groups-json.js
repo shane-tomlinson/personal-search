@@ -15,10 +15,8 @@ function saveGroups(groups, done) {
 }
 
 
-exports.init = function(options, done) {
-  db = options.db;
-
-  done && done(null);
+exports.clear = function(done) {
+  saveGroups({}, done);
 };
 
 exports.search = function(config, done) {

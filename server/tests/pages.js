@@ -5,54 +5,51 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      pages           = require('../lib/db/pages-json'),
-      DBMock          = require('./mocks/json_db');
+      pages           = require('../lib/db/pages-json');
 
-
-var dbMock = new DBMock();
-pages.init({
-  db: dbMock
-});
-
-dbMock.save({
-  key: 'pages',
-  data: {
-    url1: {
-      url: 'url1',
-      title: 'first page summary',
-      words: ["biz", "baz", "bar"],
-      summary: "biz baz bar baz baz bar biz",
-      users: ["user1@testuser.com"],
-      groups: ["group1"]
-    }
-  }
-});
-
-vows.describe("pages basic").addBatch({
+var suite = vows.describe("pages basic");
+suite.addBatch({
   'search of user with no pages': {
     topic: function() {
-      pages.search({ user: { email: 'unknown@testuser.com' } }, this.callback);
+      var cb = this.callback;
+      pages.clear(function() {
+        pages.search({ user: { email: 'unknown@testuser.com' } }, cb);
+      });
     },
 
     'returns empty array': function(found_pages) {
       assert.equal(found_pages.length, 0);
     }
-  },
+  }
+});
 
+suite.addBatch({
   'search of user with pages': {
     topic: function() {
-      pages.search({
-        user: {
-          email: 'user1@testuser.com'
-        }
-      }, this.callback);
+      var cb = this.callback;
+      pages.save({
+        url: 'http://url1.com',
+        title: 'first page summary',
+        words: ["biz", "baz", "bar"],
+        summary: "biz baz bar baz baz bar biz",
+        users: ["user1@testuser.com"],
+        groups: ["group1"]
+      }, function() {
+        pages.search({
+          user: {
+            email: 'user1@testuser.com'
+          }
+        }, cb);
+      });
     },
 
     'finds the user\'s pages': function(found_pages) {
       assert.equal(found_pages.length, 1);
     }
-  },
+  }
+});
 
+suite.addBatch({
   'search for page by terms': {
     topic: function() {
       pages.search({
@@ -63,22 +60,27 @@ vows.describe("pages basic").addBatch({
     'returns the page': function(found_pages) {
       assert.equal(found_pages.length, 1);
     }
-  },
+  }
+});
+
+suite.addBatch({
 
   'search for page by url': {
     topic: function() {
-      pages.search({ url: "url1" }, this.callback);
+      pages.search({ url: "http://url1.com" }, this.callback);
     },
 
     'returns the page': function(found_pages) {
       assert.equal(found_pages.length, 1);
     }
-  },
+  }
+});
 
+suite.addBatch({
   'save a page': {
     topic: function() {
       pages.save({
-        url: 'url2',
+        url: 'http://url2.com',
         title: 'second page summary',
         words: ["biz", "baz", "bar"],
         summary: "baz biz bar baz baz bar biz",
@@ -89,16 +91,19 @@ vows.describe("pages basic").addBatch({
 
     'allows the page to be searched for': {
       topic: function(page) {
-        assert.equal(page.url, 'url2');
+        assert.equal(page.url, 'http://url2.com');
 
-        pages.search({ url: 'url2' }, this.callback);
+        pages.search({ url: 'http://url2.com' }, this.callback);
       },
 
       'and found': function(found_pages) {
         assert.equal(found_pages.length, 1);
       }
     }
-  },
+  }
+});
+
+suite.addBatch({
 
   'search for pages that match groups': {
     topic: function() {

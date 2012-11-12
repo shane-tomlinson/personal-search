@@ -17,15 +17,16 @@ exports.get = function(options, done) {
         }
 
         try {
-          var jsonData = JSON.parse(data);
+          var jsonData = JSON.parse(data || "{}");
           if (options.key) {
-            done(null, jsonData[options.key]);
+            done(null, (jsonData && jsonData[options.key]) || {});
           }
           else {
-            done(null, jsonData);
+            done(null, jsonData || {});
           }
         }
         catch(e) {
+          console.log(String(e));
           done(e, null);
         }
       });

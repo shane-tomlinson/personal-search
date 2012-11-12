@@ -5,72 +5,77 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      groups          = require('../lib/db/groups-json'),
-      DBMock          = require('./mocks/json_db');
+      groups          = require('../lib/db/groups-json');
 
-var dbMock = new DBMock();
-groups.init({
-  db: dbMock
-});
+var suite = vows.describe("groups");
+suite.addBatch({
+  'search of unavailble group': {
+    topic: function() {
+      var cb = this.callback;
+      groups.clear(function() {
+        groups.search({ name: 'unknown' }, cb);
+      });
+    },
 
-dbMock.save({
-  key: 'groups',
-  data: {
-    group1: {
-      name: 'group1',
-      members: ["user1@testuser.com"]
+    'returns empty array.': function(found_groups) {
+      assert.equal(found_groups.length, 0);
     }
   }
 });
 
-vows.describe("groups").addBatch({
-  'search of unavailble group': {
+suite.addBatch({
+  'Saving a new group': {
     topic: function() {
-      groups.search({ name: 'unknown' }, this.callback);
+      var cb = this.callback;
+      groups.save({ name: 'group1', members: ["user1@testuser.com"] }, function(err, done) {
+        groups.search({ name: "group1" }, cb);
+      });
     },
 
-    'returns empty array': function(groups) {
-      assert.equal(groups.length, 0);
+    'allows the group to be found.': function(found_groups) {
+       assert.equal(found_groups[0].name, 'group1');
     }
-  },
+  }
+});
 
-  'search of available group': {
+suite.addBatch({
+  'After adding a second group, the original group': {
     topic: function() {
-      groups.search({ name: "group1" }, this.callback);
+      var cb = this.callback;
+      groups.save({ name: 'group2', members: [ 'user2@testuser.com' ] }, function(err, status) {
+        groups.search({ name: 'group1' }, cb);
+      });
     },
 
-    'returns the group': function(groups) {
-      assert.equal(groups[0].name, 'group1');
+    'can still be found': function(found_groups){
+      assert.equal(found_groups.length, 1);
     }
-  },
+  }
+});
 
-  'save a group': {
+suite.addBatch({
+  'along with': {
     topic: function() {
-      groups.save({ name: 'group2', members: [ 'user2@testuser.com' ] }, this.callback);
+      groups.search({ name: 'group2' }, this.callback);
     },
 
-    'allows the group to be searched for': {
-      topic: function(status) {
-        assert.equal(status, true);
-
-        groups.search({ name: 'group2' }, this.callback);
-      },
-
-      'and found': function(groups) {
-        assert.equal(groups[0].name, 'group2');
-        assert.equal(groups[0].members[0], 'user2@testuser.com');
-      }
+    'the new group': function(found_groups) {
+      assert.equal(found_groups.length, 1);
     }
-  },
+  }
+});
 
-  'search without a group name': {
+suite.addBatch({
+  'searching without a group name': {
     topic: function() {
       groups.search({}, this.callback);
     },
 
-    'returns all the groups': function(groups) {
-      assert.equal(groups.length, 2);
+    'finds all the groups': function(found_groups) {
+      assert.equal(found_groups.length, 2);
     }
   }
-}).export(module);
+});
+
+suite.export(module);
 
