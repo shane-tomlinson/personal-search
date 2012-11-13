@@ -8,7 +8,7 @@ const express         = require('express'),
       persona         = require('express-persona');
       config          = require('./etc/config'),
       pages           = require('./lib/db/pages-json'),
-      groups          = require('./lib/db/groups-json'),
+      groups          = require('./lib/groups'),
       indexer         = require('./lib/indexer');
 
 
@@ -83,7 +83,7 @@ indexer.init({ pages: pages }, function(err) {
           res.send(500, String(err));
         }
         else {
-          renderPage(req, res, 'group', {
+          renderPage(req, res, 'groups', {
             group_name: null,
             groups: groups
           });
@@ -95,8 +95,12 @@ indexer.init({ pages: pages }, function(err) {
       if (req.session.email) {
         var group_name = req.body.group;
         groups.save({ name: group_name }, function(err, status) {
-          groups.search({}, function(err, groups) {
-            renderPage(req, res, 'group', {
+          groups.search({
+            user: {
+              email: req.session.email
+            }
+          }, function(err, groups) {
+            renderPage(req, res, 'groups', {
               group_name: group_name,
               groups: groups
             });

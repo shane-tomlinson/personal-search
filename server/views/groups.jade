@@ -5,12 +5,14 @@ block content
     h1 Groups
 
     if groups.length
-      ul
-        each group in groups
-          li
-            label(for='#{group}') #{group}
-              input(type='checkbox', for='#{group}', value='#{group}')
-      
+      form(method='post', action='/groups', name='update_group')
+        ul
+          each group in groups
+            li
+              label(for='#{group.name}') #{group.name}
+                input(type='checkbox', for='#{group.name}', value='#{group.name}', checked=group.is_member)
+        input(type='submit', value='Update')
+
     else
       p There are no groups!
 
