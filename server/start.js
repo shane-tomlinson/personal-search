@@ -14,7 +14,6 @@ const express         = require('express'),
 
 function renderPage(req, res, page, options, statusCode) {
   options.email = req.session.email;
-  console.log(options.email);
   res.render(page, options);
 }
 
@@ -78,7 +77,9 @@ indexer.init({ pages: pages }, function(err) {
     });
 
     app.get('/groups', function(req, res, next) {
-      groups.search({}, function(err, groups) {
+      groups.search({
+        user: { email: req.session.email }
+      }, function(err, groups) {
         if (err) {
           res.send(500, String(err));
         }
@@ -92,6 +93,22 @@ indexer.init({ pages: pages }, function(err) {
     });
 
     app.post('/groups', function(req, res, next) {
+      if (req.session.email) {
+        var email = req.session.email;
+        var groups_to_add = req.body.groups;
+        groups.update_user_groups({
+          email: email,
+          groups: groups_to_add
+        }, function(err, status) {
+          res.redirect(301, '/groups');
+        });
+      }
+      else {
+        res.send(401);
+      }
+    });
+
+    app.post('/groups/new', function(req, res, next) {
       if (req.session.email) {
         var group_name = req.body.group;
         groups.save({ name: group_name }, function(err, status) {

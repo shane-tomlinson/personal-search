@@ -10,8 +10,10 @@ block content
           each group in groups
             li
               label(for='#{group.name}') #{group.name}
-                input(type='checkbox', for='#{group.name}', value='#{group.name}', checked=group.is_member)
-        input(type='submit', value='Update')
+                if email
+                  input(type='checkbox', name='groups[]', value='#{group.name}', checked=group.is_member)
+        if email
+          input(type='submit', value='Update')
 
     else
       p There are no groups!
@@ -22,7 +24,7 @@ block content
       h2 Create a New Group
       ul#main_form
         li
-          form(method='post', action='/groups', name='create_group')
+          form(method='post', action='/groups/new', name='create_group')
             label(for='group') Group Name
             input(type='text', id='group', name='group', placeholder='My New Group')
             input(type='submit', value='Create Group')
