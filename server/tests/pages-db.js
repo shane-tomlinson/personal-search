@@ -5,46 +5,64 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      pages           = require('../lib/db/pages-json');
+      pages           = require('../lib/db/pages-elastic');
 
-var suite = vows.describe("pages basic");
+
+var suite = vows.describe("pages basic").export(module);
+
+
 suite.addBatch({
-  'search of user with no pages': {
+  'initializing the database': {
     topic: function() {
-      var cb = this.callback;
-      pages.clear(function() {
-        pages.search({ user: { email: 'unknown@testuser.com' } }, cb);
-      });
+      pages.init({}, this.callback);
     },
 
-    'returns empty array': function(found_pages) {
-      assert.equal(found_pages.length, 0);
+    'initializes with no error': function(err, resp) {
+      assert.equal(err, null);
     }
   }
 });
 
 suite.addBatch({
-  'search of user with pages': {
+  'adding a page': {
     topic: function() {
       var cb = this.callback;
-      pages.save({
-        url: 'http://url1.com',
-        title: 'first page summary',
-        words: ["biz", "baz", "bar"],
-        summary: "biz baz bar baz baz bar biz",
-        users: ["user1@testuser.com"],
-        groups: ["group1"]
-      }, function() {
-        pages.search({
-          user: {
-            email: 'user1@testuser.com'
-          }
-        }, cb);
+      pages.init({}, function() {
+        pages.save({
+          url: 'http://url1.com',
+          title: 'first page summary',
+          words: ["biz", "baz", "bar", "buz"],
+          summary: "biz baz bar baz baz bar biz buz",
+          users: ["user1@testuser.com"],
+          groups: ["group1"]
+        }, function(err, page) {
+          setTimeout(function() {
+            cb(err, page);
+          }, 1000);
+        });
       });
     },
 
-    'finds the user\'s pages': function(found_pages) {
-      assert.equal(found_pages.length, 1);
+    'saves the page': function(err, page) {
+      assert.equal(err, null);
+      assert.ok(page);
+    }
+  }
+});
+
+suite.addBatch({
+  'search for page by email': {
+     topic: function() {
+       pages.search({
+         user: {
+           email: 'user1@testuser.com'
+         }
+       }, this.callback);
+     },
+
+    'finds the page': function(err, pages) {
+      assert.equal(err, null);
+      assert.equal(pages.length, 1);
     }
   }
 });
@@ -53,7 +71,7 @@ suite.addBatch({
   'search for page by terms': {
     topic: function() {
       pages.search({
-        terms: "biz baz"
+        terms: "biz buz"
       }, this.callback);
     },
 
@@ -77,8 +95,9 @@ suite.addBatch({
 });
 
 suite.addBatch({
-  'save a page': {
+  'save a second page': {
     topic: function() {
+      var cb = this.callback;
       pages.save({
         url: 'http://url2.com',
         title: 'second page summary',
@@ -86,23 +105,30 @@ suite.addBatch({
         summary: "baz biz bar baz baz bar biz",
         users: ["user2@testuser.com"],
         groups: ["group1", "group2"]
-      }, this.callback);
+      }, function(err) {
+        setTimeout(function() {
+          cb(err);
+        }, 1000);
+      });
     },
 
-    'allows the page to be searched for': {
-      topic: function(page) {
-        assert.equal(page.url, 'http://url2.com');
+    'saves the page': function(err, page) {
+      assert.equal(err);
+    },
 
+    'allows the page to be found': {
+      topic: function() {
+        var cb = this.callback;
         pages.search({ url: 'http://url2.com' }, this.callback);
       },
 
-      'and found': function(found_pages) {
-        assert.equal(found_pages.length, 1);
+      'and found': function(err, found_pages) {
+        assert.equal(err, null);
+        assert.ok(found_pages.length, 1);
       }
     }
   }
 });
-
 suite.addBatch({
 
   'search for pages that match groups': {
@@ -115,5 +141,29 @@ suite.addBatch({
     }
   }
 
-}).export(module);
+});
+
+suite.addBatch({
+  'search of user with no pages': {
+    topic: function() {
+      var cb = this.callback;
+      pages.search({ user: { email: 'unknown@testuser.com' } }, cb);
+    },
+
+    'returns empty array': function(found_pages) {
+      assert.equal(found_pages.length, 0);
+    }
+  }
+});
+
+suite.addBatch({
+  'reset': {
+    topic: function() {
+      pages.reset(this.callback);
+    },
+    'will reset the database': function(err, resp) {
+      assert.equal(err, null);
+    }
+  }
+});
 

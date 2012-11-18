@@ -156,6 +156,7 @@ exports.get = function(resource_url, done) {
 
         done(null, {
           processing_time: new Date() - start,
+          text: textWithoutPunctuation,
           words: words,
           summary: text.substr(0, 1000),
           title: window.document.title,

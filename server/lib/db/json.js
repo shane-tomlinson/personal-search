@@ -7,6 +7,17 @@ const path     = require('path'),
       db_path  = require('../../etc/config').json_db_path;
 
 
+exports.create = function(done) {
+  fs.exists(db_path, function(exists) {
+    if (!exists) {
+      fs.writeFile(db_path, JSON.stringify({}), 'utf8', done);
+    }
+    else {
+      done && done(null);
+    }
+  });
+};
+
 exports.get = function(options, done) {
   fs.exists(db_path, function(exists) {
     if (exists) {
@@ -42,8 +53,7 @@ exports.save = function(options, done) {
     data[options.key] = options.data;
 
     fs.writeFile(db_path, JSON.stringify(data), 'utf8', function(err) {
-      if (err) done(err, null);
-      else done(null, true);
+      done && done(err, !err);
     });
   });
 };

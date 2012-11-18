@@ -11,8 +11,57 @@ const path          = require('path'),
 var   db            = require('./json');
 
 exports.init = function(config, done) {
-  db = config.db;
-  done && done();
+  config = config || {};
+
+  if (config.db) db = config.db;
+  exports.create(done);
+};
+
+exports.create = function(done) {
+  db.create(done);
+};
+
+exports.clear = function(done) {
+  savePages({}, done);
+};
+
+exports.reset = function(done) {
+  savePages({}, done);
+};
+
+exports.save = function(page, done) {
+  getPages(function(err, pages) {
+    if (err) {
+      done(err, null);
+    }
+    else {
+      pages[page.url] = whitelistFilter(page, [
+        'words', 'summary', 'title', 'users', 'groups', 'url'
+      ]);
+
+      savePages(pages, function(err, status) {
+        if (err) done(err, null);
+        else done(null, status === true ? page : status);
+      });
+    }
+  });
+};
+
+exports.search = function(options, done) {
+  getPages(function(err, pages) {
+    if(err) {
+      done(err, null);
+      return;
+    }
+
+    filterPagesForURL(pages, options.url, function(err, pages) {
+      filterPagesForUser(pages, options.user, function(err, pages) {
+        filterPagesForString(pages, options.terms, function(err, pages) {
+          sortPages(options, _.values(pages), done);
+        });
+      });
+    });
+  });
 };
 
 function getPages(done) {
@@ -27,27 +76,6 @@ function whitelistFilter(obj, itemsToAllow) {
   return _.pick(obj, itemsToAllow);
 }
 
-exports.clear = function(done) {
-  savePages({}, done);
-};
-
-exports.save = function(page, done) {
-  getPages(function(err, pages) {
-    if (err) {
-      done(err, null);
-    }
-    else {
-      pages[page.url] = whitelistFilter(page, [
-        'words', 'summary', 'title', 'users', 'groups'
-      ]);
-
-      savePages(pages, function(err, status) {
-        if (err) done(err, null);
-        else done(null, status === true ? page : status);
-      });
-    }
-  });
-};
 
 function filterPagesForString(pages, search_string, done) {
   if (!search_string) {
@@ -65,7 +93,7 @@ function filterPagesForString(pages, search_string, done) {
 
     terms.forEach(function(term) {
       // word can either be in the URL or in the main body of text.
-      if (page.words.indexOf(term) === -1 && page.url.indexOf(term) === -1) match = false;
+      if (page.words.indexOf(term) === -1 && page.url && page.url.indexOf(term) === -1) match = false;
     });
 
     if (match) matches[url] = page;
@@ -124,19 +152,3 @@ function sortPages(options, pages, done) {
   page_rank.sortByRank(pages, options, done);
 }
 
-exports.search = function(options, done) {
-  getPages(function(err, pages) {
-    if(err) {
-      done(err, null);
-      return;
-    }
-
-    filterPagesForURL(pages, options.url, function(err, pages) {
-      filterPagesForUser(pages, options.user, function(err, pages) {
-        filterPagesForString(pages, options.terms, function(err, pages) {
-          sortPages(options, _.values(pages), done);
-        });
-      });
-    });
-  });
-};

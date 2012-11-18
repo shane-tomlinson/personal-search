@@ -41,10 +41,12 @@ exports.init = function(config, done) {
 
 exports.index = function(page_url, user, force, done) {
   pages.search({ url: page_url }, function(err, saved_pages) {
-    if (saved_pages && !force) {
+    console.log(saved_pages);
+    if (saved_pages.length && !force) {
       var page = saved_pages[0];
       // see if this user is part of the page's user list. If not, add them to
       // the list.
+      console.log(page);
       if (page.users.indexOf(user) === -1) {
         page.users.unshift(user);
         pages.save(page, function(err, page) {
@@ -68,7 +70,7 @@ exports.index = function(page_url, user, force, done) {
 
       // make sure to keep original users as well.
       page.users = [ user ];
-      if (saved_pages) {
+      if (saved_pages.length) {
         page.users.concat(saved_pages[0].users);
       }
 
