@@ -83,11 +83,13 @@ exports.save = function(page, done) {
 exports.search = function(options, done) {
   var query = {
     bool: {
+      must: [],
       should: []
     }
   };
 
-  var should = query.bool.should;
+  var must = query.bool.must,
+      should = query.bool.should;
 
   if (options.user && options.user.email) {
     should.push({ match: {
@@ -105,10 +107,13 @@ exports.search = function(options, done) {
     should.push({ match: {
       words: options.terms
     }});
+    should.push({ match: {
+      title: options.terms
+    }});
   }
 
   if (options.url) {
-    should.push({ match: {
+    must.push({ match: {
       url: options.url
     }});
   }
