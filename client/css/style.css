@@ -69,8 +69,32 @@ html[xmlns] .cf {
 /* On to our specific CSS */
 
 body {
-  padding: 20px 100px;
-  line-height: 1.15;
+  background: #f6f6f6 url('/i/bg-tile.png') repeat-x;
+  color: #41596b;
+  font-family: Georgia,serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+a {
+  color: #2983c8;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #41596b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  line-height: 1;
+}
+
+h1.splash {
+  font-size: 58px;
+  letter-spacing: -3px;
+  text-align: center;
+}
+
+.splash a {
+  color: #41596b;
+  text-decoration: none;
 }
 
 
@@ -82,9 +106,12 @@ header {
   float: right;
 }
 
+header  .top {
+  margin-top: -4.5em;
+}
+
 #content {
-  background-color: #f6f6ef;
-  padding: 2em 3em;
+  padding: 5em 12.5%;
 }
 
 
@@ -104,7 +131,7 @@ header {
 
 #main_form li input[type=text] {
   display: inline-block;
-  width: 75em;
+  width: 75%;
   padding: .25em;
 }
 
@@ -114,7 +141,7 @@ header {
 
 #results li {
   margin-bottom: 1.5em;
-  max-width: 80%;
+  max-width: 90%;
 }
 
 #results h3 {

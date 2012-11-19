@@ -6,7 +6,7 @@ block content
     if email
       li
         form(method='post', action='/save', name='save')
-          label(for='save') Root URL
+          label(for='save') Index URL
           input(type='text', id='url', name='url', placeholder='http://yoururl.com')
           input(type='submit', value='Save')
         
@@ -15,7 +15,7 @@ block content
       form(method='get', action='/search', name='search')
         label(for='search') Search
         input(type='text', id='search_text', name='search_text', placeholder='Search')
-        input(type='submit', value='search')
+        input(type='submit', value='Search')
 
 
 

@@ -10,14 +10,14 @@ html
     #content
       header.cf
         if email
-          p.right
+          p.top.right
             Hi #{email} 
             a(href="#")#signout Signout
 
         else
-          img(src='i/persona_sign_in_blue.png')#signin.right
+          img(src='i/persona_sign_in_blue.png')#signin.right.top
 
-        h1 
+        h1.splash 
           a(href='/') Personal Search
         
       block content
