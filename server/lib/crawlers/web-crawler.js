@@ -7,6 +7,45 @@ const jsdom      = require('jsdom'),
       path       = require('path'),
       page_get   = require('../get-page');
 
+const commonContentElements = [
+  "#main-content",
+  "#content-main",
+  "#api-content",
+  "#docs-content",
+  "#content",
+  "#contents",
+  "#main",
+  "#articles",
+  ".content",
+  ".contents",
+  ".main",
+  ".tab-content",
+  ".articles"
+];
+
+// get rid of scripts, links and iframes
+const elementsToRemove = [
+  "script",
+  "link",
+  "iframe",
+  "nav",
+  "#nav",
+  ".nav",
+  "#navigation",
+  ".navigation",
+  "#breadcrumbs",
+  ".breadcrumbs",
+  "#jump-to",
+  ".jump-to",
+  "#jump-to-nav",
+  ".jump-to-nav",
+  "#sidebar",
+  ".sidebar",
+  "#guide_sidebar",
+  ".guide_sidebar"
+];
+
+
 exports.get = function(resource_url, done) {
   console.log("getting", resource_url);
   page_get.get(resource_url, null, function(err, info) {
@@ -44,25 +83,6 @@ exports.getInfo = function(resource_url, html, done) {
       var links = getAnchors(resource_url, window);
 
       // get rid of scripts, links and iframes
-      var elementsToRemove = [
-        "script",
-        "link",
-        "iframe",
-        "nav",
-        "#nav",
-        ".nav",
-        "#navigation",
-        ".navigation",
-        "#breadcrumbs",
-        ".breadcrumbs",
-        "#jump-to",
-        ".jump-to",
-        "#jump-to-nav",
-        ".jump-to-nav",
-        "#sidebar",
-        ".sidebar"
-      ];
-
       elementsToRemove.forEach(function(element) {
         removeElements(window, element);
       });
@@ -165,22 +185,6 @@ function getWords(text) {
 }
 
 function getContentElement(window) {
-  var commonContentElements = [
-    "#main-content",
-    "#content-main",
-    "#api-content",
-    "#docs-content",
-    "#content",
-    "#contents",
-    "#main",
-    "#articles",
-    ".content",
-    ".contents",
-    ".main",
-    ".tab-content",
-    ".articles"
-  ];
-
   for(var i = 0, elementToSearchFor; elementToSearchFor = commonContentElements[i]; ++i) {
     var element = window.document.querySelector(elementToSearchFor);
     if (element) {
