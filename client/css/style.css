@@ -92,6 +92,10 @@ h1.splash {
   text-align: center;
 }
 
+.actionheader {
+  margin-bottom: 1.5em;
+}
+
 .splash a {
   color: #41596b;
   text-decoration: none;
@@ -133,10 +137,6 @@ header  .top {
   display: inline-block;
   width: 75%;
   padding: .25em;
-}
-
-#results h2 {
-  margin-bottom: 1.5em;
 }
 
 #results li {

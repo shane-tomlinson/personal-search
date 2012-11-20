@@ -5,9 +5,10 @@
 
 const express         = require('express'),
       path            = require('path'),
-      persona         = require('express-persona');
+      persona         = require('express-persona'),
       config          = require('./etc/config'),
       pages           = require('./lib/db/pages-elastic'),
+      url             = require('./lib/url'),
       groups          = require('./lib/groups'),
       indexer         = require('./lib/indexer');
 
@@ -44,38 +45,38 @@ pages.init({}, function(err) {
         });
       });
 
-      app.get('/search', function(req, res, next) {
-        var search_text = req.query.search_text;
-        pages.search({
+      app.get('/start', function(req, res, next) {
+        var search_text = req.query.val,
+            possibleURL = search_text.replace(/"#.*$/, ''),
+            parsedURL = url.toURL(possibleURL);
+
+        var searchConfig = {
           user: {
             email: req.session.email
           },
           terms: search_text
-        }, function(err, results) {
+        };
+
+        pages.search(searchConfig, function(err, results) {
+          var indexedURL;
+
+          // This thing looked like a URL, the user is logged in, and there
+          // are no results. See if we can index.
+          console.log("url", parsedURL);
+          if (parsedURL && parsedURL.host && req.session.email) {
+            indexedURL = possibleURL;
+            indexer.index(indexedURL, req.session.email, false);
+          }
+
+          // there are some results. Get 'em
           renderPage(req, res, 'index', {
             search_text: search_text,
-            url: null,
+            url: indexedURL,
             results: results
           });
         });
       });
 
-      app.post('/save', function(req, res, next) {
-        if (req.session.email) {
-          var page_url = req.body.url.replace(/"#.*$/, '');
-
-          renderPage(req, res, 'index', {
-            search_text: null,
-            url: page_url
-          });
-
-          // let this go out of band
-          indexer.index(page_url, req.session.email, false);
-        }
-        else {
-          res.send(401);
-        }
-      });
 
       app.get('/groups', function(req, res, next) {
         groups.search({
@@ -134,3 +135,5 @@ pages.init({}, function(err) {
       app.listen(process.env['PORT'] || 3000, process.env['IP_ADDRESS'] || '127.0.0.1');
   });
 });
+
+
