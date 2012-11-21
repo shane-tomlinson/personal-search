@@ -23,7 +23,7 @@ if (!email) {
   process.exit(1);
 }
 
-var data = JSON.parse(fs.readFileSync('pages.json', 'utf8'));
+var data = JSON.parse(fs.readFileSync('db.json', 'utf8'));
 var pages = data.pages;
 
 console.log("There are", Object.keys(pages).length, "pages");
@@ -44,6 +44,6 @@ for(var savedURL in pages) {
 
 console.log("updated", count, "pages");
 
-fs.writeFileSync('pages.json', JSON.stringify(data), 'utf8');
+fs.writeFileSync('db.json', JSON.stringify(data), 'utf8');
 
 
