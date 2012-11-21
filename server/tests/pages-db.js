@@ -5,7 +5,7 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      pages           = require('../lib/db/pages-elastic');
+      pages           = require('../lib/db/pages-json');
 
 
 var suite = vows.describe("pages basic").export(module);

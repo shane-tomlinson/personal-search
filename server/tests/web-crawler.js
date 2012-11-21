@@ -4,6 +4,7 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
+      path            = require('path'),
       fs              = require('fs'),
       web_crawler     = require('../lib/crawlers/web-crawler');
 
@@ -11,6 +12,12 @@ var suite = vows.describe("web_crawler");
 suite.export(module);
 
 var rootDomain = "http://somedomain.com";
+
+function getAnchorTestHTML() {
+  var htmlPath = path.join(__dirname, '/test-content/anchors.html');
+  var html = fs.readFileSync(htmlPath, 'utf8');
+  return html;
+}
 
 function linkFound(links, link_to_find) {
   return links.indexOf(rootDomain + '/' + link_to_find) > -1
@@ -32,8 +39,7 @@ function testLinks(links) {
 suite.addBatch({
   'anchors are handled correctly with trailing / on root URL': {
     topic: function() {
-      var html = fs.readFileSync('./test-content/anchors.html', 'utf8');
-
+      var html = getAnchorTestHTML();
       web_crawler.getInfo(rootDomain + '/', html, this.callback);
     },
 
@@ -48,8 +54,7 @@ suite.addBatch({
 suite.addBatch({
   'anchors are handled correctly without trailing / on root URL': {
     topic: function() {
-      var html = fs.readFileSync('./test-content/anchors.html', 'utf8');
-
+      var html = getAnchorTestHTML();
       web_crawler.getInfo(rootDomain, html, this.callback);
     },
 
