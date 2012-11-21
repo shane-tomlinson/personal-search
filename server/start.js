@@ -6,9 +6,10 @@
 const express         = require('express'),
       path            = require('path'),
       persona         = require('express-persona'),
+      url             = require('url'),
       config          = require('./etc/config'),
       pages           = require('./lib/db/pages-json'),
-      url             = require('./lib/url'),
+      toURL           = require('./lib/url').toURL,
       groups          = require('./lib/groups'),
       indexer         = require('./lib/indexer');
 
@@ -48,7 +49,7 @@ pages.init({}, function(err) {
       app.get('/start', function(req, res, next) {
         var search_text = req.query.val,
             possibleURL = search_text.replace(/"#.*$/, ''),
-            parsedURL = url.toURL(possibleURL);
+            parsedURL = toURL(possibleURL);
 
         var searchConfig = {
           user: {
@@ -64,16 +65,35 @@ pages.init({}, function(err) {
           // are no results. See if we can index.
           console.log("url", parsedURL);
           if (parsedURL && parsedURL.host && req.session.email) {
-            indexedURL = possibleURL;
-            indexer.index(indexedURL, req.session.email, false);
+            var searchURL = url.format(parsedURL);
+            var searchConfig = {
+              user: {
+                email: req.session.email
+              },
+              url: searchURL
+            };
+
+            pages.search(searchConfig, function(err, urlResults) {
+              if (urlResults.length === 0) {
+                indexedURL = searchURL;
+                indexer.index(indexedURL, req.session.email, false);
+              }
+              done();
+            });
+          }
+          else {
+            // this is not a URL, just show the results
+            done();
           }
 
-          // there are some results. Get 'em
-          renderPage(req, res, 'index', {
-            search_text: search_text,
-            url: indexedURL,
-            results: results
-          });
+          function done() {
+            // there are some results. Get 'em
+            renderPage(req, res, 'index', {
+              search_text: search_text,
+              url: indexedURL,
+              results: results
+            });
+          }
         });
       });
 
