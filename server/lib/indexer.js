@@ -19,11 +19,8 @@ function shouldIndex(parsedRoot, parsedLink) {
       // If the rootPath is index.html(or .htm), then it *is* the root document
       // for the directory. Get rid of the index.html so we know whether to
       // look at the new document or not.
-      console.log("before", parsedRoot.pathname, parsedLink.pathname);
       var rootPath = parsedRoot.pathname.replace(/index\.htm[l]?/, '');
       var linkPath = parsedLink.pathname;
-
-      console.log("after", rootPath, linkPath);
 
       return linkPath !== rootPath && linkPath.indexOf(rootPath) === 0;
     }
@@ -96,11 +93,11 @@ exports.index = function(page_url, user, force, done) {
 
 
             if (shouldIndex(parsedRoot, url.parse(link))) {
-              /*console.log('following link: ' + link);*/
+              console.log('following link: ' + link);
               exports.index(link, user, force, getNextLink);
             }
             else {
-              /*console.log("should not index: " + link);*/
+              console.log("should not index: " + link);
               getNextLink();
             }
           }
