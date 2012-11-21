@@ -2,27 +2,17 @@ extends layout
 
 
 block content
-  #content
-    h1 Personal Search
-    ul#main_form
-      li
-        form(method='post', action='/save', name='save')
-          label(for='save') Save URL
-          input(type='text', id='url', name='url', placeholder='http://yoururl.com')
-          input(type='submit', value='Save')
-          
-
-      li
-        form(method='get', action='/search', name='search')
-          label(for='search') Search
-          input(type='text', id='search_text', name='search_text', placeholder='Search')
-          input(type='submit', value='search')
+  ul#main_form
+    li
+      form(method='get', action='/start', name='search')
+        label(for='search') Search Term or URL
+        input(type='text', id='val', name='val', placeholder='<Search Term> or <http://site-to-index.com>')
+        input(type='submit', value='Start')
 
 
+  if url
+    include saving
 
-    if search_text
-      include results
-
-    if url
-      include saving
+  if search_text
+    include results
 

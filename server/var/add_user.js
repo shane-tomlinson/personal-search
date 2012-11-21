@@ -7,11 +7,19 @@
 const fs = require('fs'),
       url = require('url');
 
-var domainToRemove = process.argv[2];
-console.log(domainToRemove);
+var domain = process.argv[2],
+    email = process.argv[3];
 
-if (!domainToRemove) {
-  console.log("domain to remove must be specified");
+
+if (!email) {
+  email = domain;
+  domain = "*";
+}
+
+console.log(domain, email);
+
+if (!email) {
+  console.log("email must be specified");
   process.exit(1);
 }
 
@@ -23,14 +31,18 @@ var count = 0;
 for(var savedURL in pages) {
   var parsedSavedURL = url.parse(savedURL);
 
-  if(parsedSavedURL.hostname === domainToRemove) {
-    console.log("Removing", savedURL);
-    delete pages[savedURL];
-    count++;
+  if(domain === "*" || parsedSavedURL.hostname === domain) {
+    var page = pages[savedURL];
+    page.users = page.users || [];
+
+    if (page.users.indexOf(email) === -1) {
+      page.users.push(email);
+      count++;
+    }
   }
 }
 
-console.log("removed", count, "pages");
+console.log("updated", count, "pages");
 
 fs.writeFileSync('db.json', JSON.stringify(data), 'utf8');
 

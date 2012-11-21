@@ -2,7 +2,7 @@
 
 section#results
   if results.length
-      h2 Results for `#{search_text}`
+      h2.actionheader Results for `#{search_text}`
       ol
         each result in results
           if result.url && result.title

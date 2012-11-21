@@ -1,0 +1,35 @@
+extends layout
+
+block content
+  section#my_groups
+    h1 Groups
+
+    if groups.length
+      form(method='post', action='/groups', name='update_group')
+        ul
+          each group in groups
+            li
+              label(for='#{group.name}') #{group.name}
+                if email
+                  input(type='checkbox', name='groups[]', value='#{group.name}', checked=group.is_member)
+        if email
+          input(type='submit', value='Update')
+
+    else
+      p There are no groups!
+
+
+  if email
+    section#new_group
+      h2 Create a New Group
+      ul#main_form
+        li
+          form(method='post', action='/groups/new', name='create_group')
+            label(for='group') Group Name
+            input(type='text', id='group', name='group', placeholder='My New Group')
+            input(type='submit', value='Create Group')
+    
+      if group_name
+        p #{group_name} created.
+
+
