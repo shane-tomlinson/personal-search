@@ -5,8 +5,14 @@ block content
   ul#main_form
     li
       form(method='get', action='/start', name='search')
-        label(for='search') Search Term or URL
-        input(type='text', id='val', name='val', placeholder='<Search Term> or <http://site-to-index.com>')
+        if email
+          label(for='search') Search Term or URL
+        else
+          label(for='search') Search Term
+        if email
+          input(type='text', id='val', name='val', placeholder='<Search Term> or <http://site-to-index.com>')
+        else 
+          input(type='text', id='val', name='val', placeholder='<Search Term>')
         input(type='submit', value='Start')
 
 
