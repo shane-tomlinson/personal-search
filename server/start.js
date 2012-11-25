@@ -19,6 +19,8 @@ function renderPage(req, res, page, options, statusCode) {
   res.render(page, options);
 }
 
+console.log("public_url", config.public_url);
+
 pages.init({}, function(err) {
   indexer.init({ pages: pages }, function(err) {
     if (err) throw err;
