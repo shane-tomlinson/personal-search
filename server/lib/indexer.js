@@ -80,7 +80,6 @@ exports.index = function(page_url, user, force, done) {
         }
 
         var parsedRoot = url.parse(page_url);
-        /*.hostname.replace(/^www\./, '');*/
         var links = [].concat(page.links);
         getNextLink();
 
@@ -88,10 +87,6 @@ exports.index = function(page_url, user, force, done) {
           var link = links.shift();
 
           if (link) {
-
-            /*console.log('getting next link', link);*/
-
-
             if (shouldIndex(parsedRoot, url.parse(link))) {
               console.log('following link: ' + link);
               exports.index(link, user, force, getNextLink);

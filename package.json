@@ -9,7 +9,8 @@
     "request": "2.11.4",
     "jsdom": "0.2.18",
     "express-persona": "0.0.7",
-    "underscore": "1.4.2"
+    "underscore": "1.4.2",
+    "github": "0.1.7"
   },
   "devDependencies": {
     "awsbox": "0.3.1",
