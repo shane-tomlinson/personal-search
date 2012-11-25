@@ -50,7 +50,6 @@ const elementsToRemove = [
 
 
 exports.get = function(resource_url, done) {
-  console.log("getting", resource_url);
   page_get.get(resource_url, null, function(err, info) {
     if (err) {
       done(err, null);
@@ -103,8 +102,6 @@ exports.getInfo = function(resource_url, html, done) {
           .replace('&nbsp', ' ')
           .replace(/\s+/g, ' ').trim();
 
-      /*console.log(text);*/
-
       var textWithoutPunctuation = text.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ');
       var words = getWords(textWithoutPunctuation);
 
@@ -136,40 +133,27 @@ function getAnchors(resource_url, window) {
   var anchors = {};
   var parsedURL = url.parse(resource_url);
   var localFile = "file://" + __filename;
-  var localDir = "file://" + __dirname;
+  var localDir = "file://" + __dirname + '/';
 
   for (var element, index=0; index < count; index++) {
     element = els[index];
-    // jsdom has a bug where links can be converted to file:/// links.
-    // hash only links without a host are converted to file:/// links with
-    // the local filename absolute path links are converted to file:///
-    // get rid of any of these as well as any hashes.
-    // If the resource_url ends in a /, it will prepend the localDir onto the
-    // URL.
+    // jsdom does some funkiness on links that do not have an explicit
+    // protocol.
+    //
+    // relative links will have the localFile or localDir prepended.
+    // absolute links will have a file:/// prepended
+    // protocol relative links will have a file:// prepended.
     var href = element.href.replace(localFile, '')
                 .replace(localDir, '')
-                .replace(/file:\/\/\//, '/')
-                .replace(/#.*/g, '');
-
+                // get rid of any trailing hashes.
+                .replace(/#.*$/, '')
+                // file:/// are absolute paths
+                .replace(/^file:\/\/\//, '/')
+                // file:// are protocol relative URLs
+                .replace(/^file:\/\//, "//")
 
     if (href) {
-      // if there are still file://, that means this is a protocol relative
-      // URL. swap the file:// for the current resource_url's protocol.
-      if (/^file:\/\//.test(href)) href = href.replace(/^file:\/\//, parsedURL.protocol + "//");
-      // handle absolute path URLs
-      else if(/^\//.test(href)) {
-        // If the original resource_url has a trailing /, jsdom will drop the
-        // path of the original URL. Add the protocol, host, and path.
-        if (/\/$/.test(resource_url)) {
-          href = (parsedURL.protocol + "//" + parsedURL.host + parsedURL.pathname + href.replace(/^\//, ''));
-        }
-        else {
-          // no trailing slash, just add the protocol and hostname
-          href = (parsedURL.protocol + "//" + parsedURL.host + href);
-        }
-      }
-
-      /*console.log(element.href, "->\n\t", href);*/
+      href = url.resolve(resource_url, href);
       anchors[href] = true;
     }
   }

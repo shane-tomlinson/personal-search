@@ -23,16 +23,22 @@ function linkFound(links, link_to_find) {
   return links.indexOf(rootDomain + '/' + link_to_find) > -1
 }
 
-function testLinks(links) {
-  assert.equal(links.length, 9);
-  assert.ok(linkFound(links, "relative_with_hash.html"));
-  assert.ok(linkFound(links, "relative.html"));
-  assert.ok(linkFound(links, "with_path/relative.html"));
-  assert.ok(linkFound(links, "absolute.html"));
-  assert.ok(linkFound(links, "with_path/absolute.html"));
-  assert.ok(linkFound(links, "full_url.html"));
-  assert.ok(linkFound(links, "path/full_url_with_path.html"));
-  assert.ok(linkFound(links, "protocol_relative.html"));
+function testRootLinks(links) {
+  assert.equal(links.length, 12);
+  var linksToFind = [
+    "relative_with_hash.html",
+    "relative.html",
+    "with_path/relative.html",
+    "absolute.html",
+    "with_path/absolute.html",
+    "deep/deep/deep/path.html",
+    "full_url.html",
+    "path/full_url_with_path.html",
+    "protocol_relative.html"
+  ];
+  linksToFind.forEach(function(link) {
+    assert.ok(linkFound(links, link));
+  });
   assert.ok(links.indexOf("http://alternate.com/protocol_relative.html") > -1);
 }
 
@@ -46,7 +52,7 @@ suite.addBatch({
     'anchors are available': function(err, info) {
       assert.equal(err, null);
 
-      testLinks(info.links);
+      testRootLinks(info.links);
     }
   }
 });
@@ -61,9 +67,59 @@ suite.addBatch({
     'anchors are available': function(err, info) {
       assert.equal(err, null);
 
-      testLinks(info.links);
+      testRootLinks(info.links);
     }
   }
 });
+
+suite.addBatch({
+  'anchors are handled correctly without trailing / on root URL': {
+    topic: function() {
+      var html = getAnchorTestHTML();
+      web_crawler.getInfo(rootDomain, html, this.callback);
+    },
+
+    'anchors are available': function(err, info) {
+      assert.equal(err, null);
+
+      testRootLinks(info.links);
+    }
+  }
+});
+
+suite.addBatch({
+  'anchors are handled correctly when starting at /path/': {
+    topic: function() {
+      var html = getAnchorTestHTML();
+      web_crawler.getInfo(rootDomain + '/path/', html, this.callback);
+    },
+
+    'anchors are available': function(err, info) {
+      assert.equal(err, null);
+
+      var links = info.links;
+
+      assert.equal(links.length, 12);
+      var linksToFind = [
+        "path/relative_with_hash.html",
+        "path/relative.html",
+        "path/with_path/relative.html",
+        "absolute.html",
+        "with_path/absolute.html",
+        "with_path/",
+        "page_without_extension",
+        "deep/deep/deep/path.html",
+        "full_url.html",
+        "path/full_url_with_path.html",
+        "protocol_relative.html"
+      ];
+      linksToFind.forEach(function(link) {
+        assert.ok(linkFound(links, link), link + " is found");
+      });
+      assert.ok(links.indexOf("http://alternate.com/protocol_relative.html") > -1);
+    }
+  }
+});
+
 
 
