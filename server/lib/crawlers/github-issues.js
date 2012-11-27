@@ -8,6 +8,8 @@
 const github      = require('github');
 
 exports.get = function(user, repo, done) {
+  var start = new Date();
+
   var client = new github({
     version: "3.0.0"
   });
@@ -25,11 +27,33 @@ exports.get = function(user, repo, done) {
 
   function appendResults(err, res) {
     if (err) {
-      done && done(err);
-      return;
+      return (done && done(err));
     }
 
-    issues = issues.concat(res);
+    res.forEach(function(issue) {
+      var text = issue.body.replace(/<(.*?)>/g, ' ')
+          // the next two are because after replacing tags with spaces, sometimes
+          // there are spaces and then punctuation marks
+          .replace(' .', '.')
+          .replace(' ,', ',')
+          .replace(/<!--[\s\S]*?-->/g, ' ')
+          .replace('&nbsp', ' ')
+          .replace(/\s+/g, ' ').trim();
+
+      var textWithoutPunctuation = text.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ');
+      var words = getWords(textWithoutPunctuation);
+
+      issues.push({
+        processing_time: new Date() - start,
+        text: textWithoutPunctuation,
+        words: words,
+        summary: text.substr(0, 1000),
+        title: issue.title,
+        url: issue.html_url,
+        links: []
+      });
+    });
+
     if (client.hasNextPage(res)) {
       client.getNextPage(res, appendResults);
     }
@@ -38,4 +62,14 @@ exports.get = function(user, repo, done) {
     }
   }
 };
+
+function getWords(text) {
+  var words = {};
+  var wordArray = text.split(' ');
+  wordArray.forEach(function(word) {
+    words[word.toLowerCase()] = true;
+  });
+
+  return Object.keys(words);
+}
 

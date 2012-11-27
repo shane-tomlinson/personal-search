@@ -6,7 +6,7 @@ const vows            = require('vows'),
       assert          = require('assert'),
       path            = require('path'),
       fs              = require('fs'),
-      web_crawler     = require('../lib/crawlers/web-crawler');
+      web_crawler     = require('../../lib/crawlers/web');
 
 var suite = vows.describe("web_crawler");
 suite.export(module);
@@ -14,7 +14,7 @@ suite.export(module);
 var rootDomain = "http://somedomain.com";
 
 function getAnchorTestHTML() {
-  var htmlPath = path.join(__dirname, '/test-content/anchors.html');
+  var htmlPath = path.join(__dirname, '..', '/test-content/anchors.html');
   var html = fs.readFileSync(htmlPath, 'utf8');
   return html;
 }

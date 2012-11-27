@@ -4,7 +4,7 @@
 
 const vows            = require('vows'),
       assert          = require('assert'),
-      github_issues   = require('../lib/crawlers/github-issues');
+      github_issues   = require('../../lib/crawlers/github-issues');
 
 var suite = vows.describe("github_issues");
 suite.export(module);
@@ -12,7 +12,7 @@ suite.export(module);
 suite.addBatch({
   'get': {
     topic: function() {
-      github_issues.get('shane-tomlinson', 'personal-search', this.callback);
+      github_issues.get('shane-tomlinson', 'node-font-face-generator', this.callback);
     },
 
     'gets all the issues': function(err, issues) {
