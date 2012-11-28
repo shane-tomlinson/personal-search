@@ -30,6 +30,7 @@ exports.reset = function(done) {
 };
 
 exports.save = function(page, done) {
+  console.log("saving page", page.url);
   getPages(function(err, pages) {
     if (err) {
       done(err, null);

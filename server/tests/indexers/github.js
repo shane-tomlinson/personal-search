@@ -9,7 +9,7 @@ const vows            = require('vows'),
 
 const repo_url = "https://github.com/shane-tomlinson/node-font-face-generator";
 
-var suite = vows.describe("github");
+var suite = vows.describe("github indexer");
 suite.export(module);
 
 suite.addBatch({

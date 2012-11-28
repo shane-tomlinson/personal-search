@@ -22,9 +22,10 @@ exports.index = function(page_url, user, force, done) {
 
     // make sure to keep original users as well.
     page.users = [ user ];
+    /*
     if (saved_pages.length) {
       page.users.concat(saved_pages[0].users);
-    }
+    }*/
 
     console.log("saving page", page_url);
     pages.save(page, function(err, page) {
@@ -50,7 +51,7 @@ exports.index = function(page_url, user, force, done) {
           }
         }
         else {
-          done && done(null, true);
+          done && done(null);
         }
       }
 
