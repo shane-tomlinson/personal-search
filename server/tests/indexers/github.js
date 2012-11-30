@@ -29,9 +29,14 @@ suite.addBatch({
       github.index(repo_url, "testuser", false, this.callback);
     },
 
-    'gets a github repo\'s issues': function(err, issues) {
+    'gets a github repo\'s README and issues': function(err, pages) {
       assert.equal(err, null);
-      assert.isArray(issues);
+      assert.isArray(pages);
+      assert.ok(pages.length > 1);
+
+      var repoInfo = pages[0];
+      assert.equal("https://github.com/shane-tomlinson/node-font-face-generator", repoInfo.url);
+      assert.equal("shane-tomlinson/node-font-face-generator: Generate language/browser dependent @font-face CSS declarations", repoInfo.title);
     }
   }
 });

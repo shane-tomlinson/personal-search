@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const crawler   = require('../crawlers/github-issues'),
+const issues_crawler   = require('../crawlers/github-issues'),
+      repo_crawler     = require('../crawlers/github-repo'),
       url              = require('url');
 
 var pages;
@@ -14,10 +15,19 @@ exports.init = function(config, done) {
 };
 
 exports.index = function(repo_url, user, force, done) {
-  var repoInfo = exports.parseURL(repo_url);
+  var repoConfig = exports.parseURL(repo_url);
 
-  if (repoInfo) {
-    crawler.get(repoInfo.user, repoInfo.repo, done);
+  if (repoConfig) {
+    repo_crawler.get(repoConfig.user, repoConfig.repo, function(err, repo) {
+      if (err) return (done && done(err));
+
+      issues_crawler.get(repoConfig.user, repoConfig.repo, function(err, issues) {
+        if (err) return (done && done(err));
+
+        // the repo info should always be the first item in the list.
+        done && done(null, [repo].concat(issues));
+      });
+    });
   }
   else {
     done && done(new Error("invalid repo URL"));
