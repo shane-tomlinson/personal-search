@@ -23,7 +23,7 @@
 
   "scripts": {
     "start": "node server/start.js",
-    "test": "vows server/tests/*.js"
+    "test": "scripts/run_tests"
   }
   
 }
