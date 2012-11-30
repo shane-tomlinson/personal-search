@@ -7,21 +7,40 @@ const vows            = require('vows'),
       web_indexer     = require('../../lib/indexers/web'),
       pages           = require('../../lib/db/pages-json');
 
-// XXX this should depend on a locally hosted file instead.
-const root_url = "http://www.shanetomlinson.com/about/"
+// XXX this should depend on a locally hosted file that can be
+// controlled instead.
+const root_url = "http://www.shanetomlinson.com/"
+const sub_page_url = "http://www.shanetomlinson.com/about/"
 
 var suite = vows.describe("web indexer");
 suite.export(module);
 
 suite.addBatch({
-  'index': {
+  'index on a sub page': {
     topic: function() {
-      web_indexer.init({ pages: pages });
+      web_indexer.init();
+      web_indexer.index(sub_page_url, "testuser", false, this.callback);
+    },
+
+    'gets only that sub-page': function(err, pages) {
+      assert.equal(err, null);
+      assert.isArray(pages);
+      assert.equal(pages.length, 1);
+    }
+  }
+});
+
+suite.addBatch({
+  'index on a root page': {
+    topic: function() {
+      web_indexer.init();
       web_indexer.index(root_url, "testuser", false, this.callback);
     },
 
-    'indexes a the page and any sub-pages': function(err) {
+    'indexes that page and any sub-pages': function(err, pages) {
       assert.equal(err, null);
+      assert.isArray(pages);
+      assert.ok(pages.length > 1);
     }
   }
 });

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const vows            = require('vows'),
-      assert          = require('assert'),
+      assert          = require('node-assert-extras'),
       github_issues   = require('../../lib/crawlers/github-issues');
 
 var suite = vows.describe("github_issues");
@@ -17,7 +17,7 @@ suite.addBatch({
 
     'gets all the issues': function(err, issues) {
       assert.equal(err, null);
-      assert.equal(Object.prototype.toString.call(issues), "[object Array]");
+      assert.isArray(issues);
     }
   }
 });

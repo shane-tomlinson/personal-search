@@ -3,9 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const vows            = require('vows'),
-      assert          = require('assert'),
-      github          = require('../../lib/indexers/github'),
-      pages           = require('../../lib/db/pages-json');
+      assert          = require('node-assert-extras'),
+      github          = require('../../lib/indexers/github');
 
 const repo_url = "https://github.com/shane-tomlinson/node-font-face-generator";
 
@@ -26,12 +25,13 @@ suite.addBatch({
 suite.addBatch({
   'index': {
     topic: function() {
-      github.init({ pages: pages });
+      github.init();
       github.index(repo_url, "testuser", false, this.callback);
     },
 
-    'indexes a github repo\'s issues': function(err) {
+    'gets a github repo\'s issues': function(err, issues) {
       assert.equal(err, null);
+      assert.isArray(issues);
     }
   }
 });

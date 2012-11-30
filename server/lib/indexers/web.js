@@ -10,52 +10,50 @@ var pages;
 exports.init = function(config, done) {
   config = config || {};
 
-  pages = config.pages;
   done && done(null);
 };
 
-exports.index = function(page_url, user, force, done) {
+/**
+ * Recursively index web pages starting from page_url.
+ * @method index
+ * @param {string} page_url
+ * @param {string} user
+ * @param {boolean} force
+ * @param {function} done
+ */
+exports.index = function(page_url, user, force, done, pages) {
+  var pages = pages || [];
   web_crawler.get(page_url, function(err, page) {
     if (err) {
       return (done && done(err, null));
     }
 
-    // make sure to keep original users as well.
-    page.users = [ user ];
-    /*
-    if (saved_pages.length) {
-      page.users.concat(saved_pages[0].users);
-    }*/
+    // save the page
+    pages.push(page);
 
+    // get any children
     console.log("saving page", page_url);
-    pages.save(page, function(err, page) {
-      if (err) {
-        return (done && done(err, null));
-      }
+    var parsedRoot = url.parse(page_url);
+    var links = [].concat(page.links);
+    getNextLink();
 
-      var parsedRoot = url.parse(page_url);
-      var links = [].concat(page.links);
-      getNextLink();
+    function getNextLink() {
+      var link = links.shift();
 
-      function getNextLink() {
-        var link = links.shift();
-
-        if (link) {
-          if (shouldIndex(parsedRoot, url.parse(link))) {
-            console.log('following link: ' + link);
-            exports.index(link, user, force, getNextLink);
-          }
-          else {
-            console.log("should not index: " + link);
-            getNextLink();
-          }
+      if (link) {
+        if (shouldIndex(parsedRoot, url.parse(link))) {
+          console.log('following link: ' + link);
+          exports.index(link, user, force, getNextLink, pages);
         }
         else {
-          done && done(null);
+          /*console.log("should not index: " + link);*/
+          getNextLink();
         }
       }
-
-    });
+      else {
+        done && done(null, pages);
+      }
+    }
   });
 };
 
@@ -64,7 +62,7 @@ function shouldIndex(parsedRoot, parsedLink) {
     var rootHostname = parsedRoot.hostname.replace(/^www\./, '');
     var linkHostname = parsedLink.hostname.replace(/^www\./, '');
 
-    console.log(rootHostname, linkHostname);
+    /*console.log(rootHostname, linkHostname);*/
 
     // link MUST be on the same host and a sub-path of the current path
     if (linkHostname === rootHostname) {
