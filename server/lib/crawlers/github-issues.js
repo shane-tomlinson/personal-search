@@ -5,7 +5,8 @@
 // take care of crawling a GitHub repo's issues.
 
 
-const github      = require('github');
+const github            = require('github'),
+      post_process      = require('./post-process');
 
 exports.get = function(user, repo, done) {
   var start = new Date();
@@ -31,23 +32,12 @@ exports.get = function(user, repo, done) {
     }
 
     res.forEach(function(issue) {
-      var text = issue.body.replace(/<(.*?)>/g, ' ')
-          // the next two are because after replacing tags with spaces, sometimes
-          // there are spaces and then punctuation marks
-          .replace(' .', '.')
-          .replace(' ,', ',')
-          .replace(/<!--[\s\S]*?-->/g, ' ')
-          .replace('&nbsp', ' ')
-          .replace(/\s+/g, ' ').trim();
-
-      var textWithoutPunctuation = text.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ');
-      var words = getWords(textWithoutPunctuation);
-
+      var textInfo = post_process.process(issue.body);
       issues.push({
         processing_time: new Date() - start,
-        text: textWithoutPunctuation,
-        words: words,
-        summary: text.substr(0, 1000),
+        text: textInfo.text_no_punctuation,
+        words: textInfo.words,
+        summary: textInfo.text_clean.substr(0, 1000),
         title: issue.title,
         url: issue.html_url,
         links: []
@@ -62,14 +52,4 @@ exports.get = function(user, repo, done) {
     }
   }
 };
-
-function getWords(text) {
-  var words = {};
-  var wordArray = text.split(' ');
-  wordArray.forEach(function(word) {
-    words[word.toLowerCase()] = true;
-  });
-
-  return Object.keys(words);
-}
 

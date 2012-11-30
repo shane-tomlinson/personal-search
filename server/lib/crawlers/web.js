@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const jsdom      = require('jsdom'),
-      url        = require('url'),
-      path       = require('path'),
-      page_get   = require('../get-page');
+const jsdom           = require('jsdom'),
+      url             = require('url'),
+      path            = require('path'),
+      page_get        = require('../get-page'),
+      post_process    = require('./post-process');
 
 const commonContentElements = [
   "#main-content",
@@ -93,23 +94,12 @@ exports.getInfo = function(resource_url, html, done) {
 
       // strip all tags, replace tags with a space.
       // strip all multiple whitespace occurrances with a single space
-      var text = contentElement.innerHTML.replace(/<(.*?)>/g, ' ')
-          // the next two are because after replacing tags with spaces, sometimes
-          // there are spaces and then punctuation marks
-          .replace(' .', '.')
-          .replace(' ,', ',')
-          .replace(/<!--[\s\S]*?-->/g, ' ')
-          .replace('&nbsp', ' ')
-          .replace(/\s+/g, ' ').trim();
-
-      var textWithoutPunctuation = text.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ');
-      var words = getWords(textWithoutPunctuation);
-
+      var textInfo = post_process.process(contentElement.innerHTML);
       done(null, {
         processing_time: new Date() - start,
-        text: textWithoutPunctuation,
-        words: words,
-        summary: text.substr(0, 1000),
+        text: textInfo.text_no_punctuation,
+        words: textInfo.words,
+        summary: textInfo.text_clean.substr(0, 1000),
         title: window.document.title,
         url: resource_url,
         links: links
@@ -131,7 +121,6 @@ function getAnchors(resource_url, window) {
   var els = window.document.body.getElementsByTagName("a");
   var count = els && els.length;
   var anchors = {};
-  var parsedURL = url.parse(resource_url);
   var localFile = "file://" + __filename;
   var localDir = "file://" + __dirname + '/';
 
@@ -150,7 +139,7 @@ function getAnchors(resource_url, window) {
                 // file:/// are absolute paths
                 .replace(/^file:\/\/\//, '/')
                 // file:// are protocol relative URLs
-                .replace(/^file:\/\//, "//")
+                .replace(/^file:\/\//, "//");
 
     if (href) {
       href = url.resolve(resource_url, href);
@@ -159,16 +148,6 @@ function getAnchors(resource_url, window) {
   }
 
   return Object.keys(anchors);
-}
-
-function getWords(text) {
-  var words = {};
-  var wordArray = text.split(' ');
-  wordArray.forEach(function(word) {
-    words[word.toLowerCase()] = true;
-  });
-
-  return Object.keys(words);
 }
 
 function getContentElement(window) {
