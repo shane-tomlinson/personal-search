@@ -5,7 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const fs = require('fs'),
-      url = require('url');
+      url = require('url'),
+      dbFile = require('./config').dbFile;
 
 var domainToRemove = process.argv[2];
 console.log(domainToRemove);
@@ -15,7 +16,7 @@ if (!domainToRemove) {
   process.exit(1);
 }
 
-var data = JSON.parse(fs.readFileSync('db.json', 'utf8'));
+var data = JSON.parse(fs.readFileSync(dbFile, 'utf8'));
 var pages = data.pages;
 
 console.log("There are", Object.keys(pages).length, "pages");
@@ -32,6 +33,6 @@ for(var savedURL in pages) {
 
 console.log("removed", count, "pages");
 
-fs.writeFileSync('db.json', JSON.stringify(data), 'utf8');
+fs.writeFileSync(dbFile, JSON.stringify(data), 'utf8');
 
 

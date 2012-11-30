@@ -5,11 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const fs = require('fs'),
-      url = require('url');
+      url = require('url'),
+      dbFile = require('./config').dbFile;
 
 var domains = {};
 
-var pages = JSON.parse(fs.readFileSync('db.json', 'utf8')).pages;
+var pages = JSON.parse(fs.readFileSync(dbFile, 'utf8')).pages;
 
 console.log("There are", Object.keys(pages).length, "pages");
 for(var savedURL in pages) {
